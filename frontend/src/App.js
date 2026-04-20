@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -61,3 +62,8 @@ function App() {
 }
 
 export default App;
+=======
+import App from './App.jsx';
+
+export default App;
+>>>>>>> de0f3b4 (commit)

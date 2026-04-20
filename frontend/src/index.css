@@ -1,3 +1,157 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+:root {
+	--bg: #f4f8fc;
+	--surface: #ffffff;
+	--surface-alt: #eef3f8;
+	--text: #10223a;
+	--muted: #506682;
+	--primary: #005f73;
+	--primary-soft: #cde8ed;
+	--accent: #ee9b00;
+	--danger: #c44536;
+	--success: #2d8a55;
+	--border: #d9e3ee;
+	--shadow: 0 12px 30px rgba(16, 34, 58, 0.08);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+	color: var(--text);
+	background:
+		radial-gradient(circle at 20% 10%, #d8f3ff 0%, transparent 30%),
+		radial-gradient(circle at 80% 5%, #fff3cd 0%, transparent 35%),
+		linear-gradient(180deg, #f9fcff 0%, var(--bg) 55%, #ecf4fb 100%);
+	min-height: 100vh;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.app-shell {
+	display: grid;
+	grid-template-columns: 250px 1fr;
+	min-height: 100vh;
+}
+
+.main-content {
+	padding: 1rem 1.25rem 1.5rem;
+}
+
+.panel {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 14px;
+	box-shadow: var(--shadow);
+	padding: 1rem;
+}
+
+.grid {
+	display: grid;
+	gap: 1rem;
+}
+
+.grid.two {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid.three {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.btn {
+	border: none;
+	border-radius: 10px;
+	padding: 0.6rem 0.9rem;
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.btn.primary {
+	background: var(--primary);
+	color: white;
+}
+
+.btn.secondary {
+	background: var(--surface-alt);
+	color: var(--text);
+}
+
+.btn.danger {
+	background: var(--danger);
+	color: white;
+}
+
+.input,
+.select,
+.textarea {
+	width: 100%;
+	border: 1px solid var(--border);
+	background: #fff;
+	border-radius: 10px;
+	padding: 0.55rem 0.7rem;
+	color: var(--text);
+}
+
+.label {
+	display: block;
+	margin-bottom: 0.35rem;
+	color: var(--muted);
+	font-size: 0.9rem;
+}
+
+.table-wrap {
+	overflow-x: auto;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+th,
+td {
+	border-bottom: 1px solid var(--border);
+	text-align: left;
+	padding: 0.7rem;
+}
+
+th {
+	color: var(--muted);
+	font-size: 0.85rem;
+	text-transform: uppercase;
+}
+
+.auth-card {
+	width: min(480px, 96vw);
+	margin: 3rem auto;
+	background: var(--surface);
+	border-radius: 18px;
+	border: 1px solid var(--border);
+	box-shadow: var(--shadow);
+	padding: 1.5rem;
+}
+
+.muted {
+	color: var(--muted);
+}
+
+@media (max-width: 960px) {
+	.app-shell {
+		grid-template-columns: 1fr;
+	}
+
+	.main-content {
+		padding: 0.8rem;
+	}
+
+	.grid.two,
+	.grid.three {
+		grid-template-columns: 1fr;
+	}
+}

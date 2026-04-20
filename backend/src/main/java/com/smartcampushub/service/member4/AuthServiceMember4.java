@@ -1,0 +1,107 @@
+package com.smartcampushub.service.member4;
+
+import com.smartcampushub.common.exception.ResourceNotFoundException;
+import com.smartcampushub.dto.member4.AuthResponseMember4;
+import com.smartcampushub.dto.member4.MockGoogleLoginRequestMember4;
+import com.smartcampushub.dto.member4.UserProfileResponseMember4;
+import com.smartcampushub.enums.UserRole;
+import com.smartcampushub.model.member4.User;
+import com.smartcampushub.repository.member4.UserRepositoryMember4;
+import com.smartcampushub.security.JwtService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.Set;
+
+@Service
+@RequiredArgsConstructor
+public class AuthServiceMember4 {
+
+    private final UserRepositoryMember4 userRepositoryMember4;
+    private final JwtService jwtService;
+
+    public AuthResponseMember4 mockGoogleLogin(MockGoogleLoginRequestMember4 request) {
+        User user = userRepositoryMember4.findByEmail(request.getEmail().toLowerCase())
+                .orElseGet(() -> createNewUserFromMockRequest(request));
+
+        user.setName(request.getName());
+        user.setPictureUrl(request.getPictureUrl());
+        user.setLastLoginAt(Instant.now());
+
+        User saved = userRepositoryMember4.save(user);
+        String token = jwtService.generateToken(saved);
+
+        return toAuthResponse(saved, token);
+    }
+
+    public String processOauth2Login(String email, String name, String pictureUrl) {
+        User user = userRepositoryMember4.findByEmail(email.toLowerCase())
+                .orElseGet(() -> User.builder()
+                        .email(email.toLowerCase())
+                        .name(name)
+                        .pictureUrl(pictureUrl)
+                        .provider("google")
+                        .roles(Set.of(defaultRoleForEmail(email)))
+                        .build());
+
+        user.setName(name);
+        user.setPictureUrl(pictureUrl);
+        user.setLastLoginAt(Instant.now());
+
+        User saved = userRepositoryMember4.save(user);
+        return jwtService.generateToken(saved);
+    }
+
+    public UserProfileResponseMember4 getProfile(String userId) {
+        User user = userRepositoryMember4.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return UserProfileResponseMember4.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .pictureUrl(user.getPictureUrl())
+                .roles(user.getRoles())
+                .build();
+    }
+
+    private User createNewUserFromMockRequest(MockGoogleLoginRequestMember4 request) {
+        UserRole defaultRole = defaultRoleForEmail(request.getEmail());
+        UserRole resolvedRole = request.getRequestedRole() != null ? request.getRequestedRole() : defaultRole;
+
+        if (resolvedRole == UserRole.ADMIN && !request.getEmail().toLowerCase().endsWith("@admin.sliit.lk")) {
+            resolvedRole = defaultRole;
+        }
+
+        return User.builder()
+                .email(request.getEmail().toLowerCase())
+                .name(request.getName())
+                .pictureUrl(request.getPictureUrl())
+                .provider("google")
+                .roles(Set.of(resolvedRole))
+                .build();
+    }
+
+    private UserRole defaultRoleForEmail(String email) {
+        String normalized = email.toLowerCase();
+        if (normalized.endsWith("@admin.sliit.lk")) {
+            return UserRole.ADMIN;
+        }
+        if (normalized.contains("tech")) {
+            return UserRole.TECHNICIAN;
+        }
+        return UserRole.USER;
+    }
+
+    private AuthResponseMember4 toAuthResponse(User user, String token) {
+        return AuthResponseMember4.builder()
+                .token(token)
+                .userId(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .pictureUrl(user.getPictureUrl())
+                .roles(user.getRoles())
+                .build();
+    }
+}

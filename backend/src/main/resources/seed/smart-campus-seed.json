@@ -1,0 +1,42 @@
+{
+  "users": [
+    {
+      "email": "admin@admin.sliit.lk",
+      "name": "System Admin",
+      "roles": ["ADMIN"],
+      "provider": "google"
+    },
+    {
+      "email": "tech1@sliit.lk",
+      "name": "Technician One",
+      "roles": ["TECHNICIAN"],
+      "provider": "google"
+    },
+    {
+      "email": "student1@sliit.lk",
+      "name": "Student User",
+      "roles": ["USER"],
+      "provider": "google"
+    }
+  ],
+  "resources": [
+    {
+      "name": "Lecture Hall A1",
+      "type": "LECTURE_HALL",
+      "capacity": 120,
+      "location": "Engineering Block",
+      "availabilityWindows": ["08:00-12:00", "13:00-17:00"],
+      "status": "ACTIVE",
+      "description": "Tiered seating hall"
+    },
+    {
+      "name": "Networking Lab 03",
+      "type": "LAB",
+      "capacity": 40,
+      "location": "Computing Building",
+      "availabilityWindows": ["09:00-16:00"],
+      "status": "ACTIVE",
+      "description": "Lab with managed switches and routers"
+    }
+  ]
+}
