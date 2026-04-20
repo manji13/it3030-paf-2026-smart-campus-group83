@@ -1,11 +1,8 @@
 import React from 'react';
-import Navbar from '../components/Navbar';
 
 function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar /> 
-      
       {/* p-5: Padding of 1.25rem (20px)
           max-w-4xl: Limits content width for better readability
           mx-auto: Centers the container
