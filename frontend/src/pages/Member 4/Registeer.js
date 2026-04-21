@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 export default function Register() {
-    // ---------------------------------------------------------
-    // YOUR ORIGINAL LOGIC (UNTOUCHED)
-    // ---------------------------------------------------------
+
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
     const navigate = useNavigate();
 
@@ -20,9 +18,7 @@ export default function Register() {
         }
     };
 
-    // ---------------------------------------------------------
-    // NEW PERFECT UI (UPGRADED RETURN STATEMENT)
-    // ---------------------------------------------------------
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-gray-100">

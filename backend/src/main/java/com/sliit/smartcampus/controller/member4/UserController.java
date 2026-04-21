@@ -23,11 +23,22 @@ public class UserController {
         return ResponseEntity.ok(userService.registerUser(user));
     }
 
-    // 2. POST - Login
+    // 2. POST - Login (email + password)
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
         try {
             User user = userService.loginUser(credentials.get("email"), credentials.get("password"));
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // 3. POST - Google Login (OAuth access token)
+    @PostMapping("/google-login")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> payload) {
+        try {
+            User user = userService.googleLogin(payload.get("token"));
             return ResponseEntity.ok(user);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
