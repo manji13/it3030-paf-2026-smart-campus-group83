@@ -5,6 +5,8 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 // Shared Components
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
+import TicketForm from './pages/member3/TicketForm';
+import TicketList from './pages/member3/TicketList';
 
 // Member 4 Pages
 import Login from './pages/Member 4/Login';
@@ -44,6 +46,15 @@ function App() {
         </Routes>
       </Router>
     </GoogleOAuthProvider>
+    <Router>
+      {/* ONLY Page Navigation Paths go here. No UI! */}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/ticketList" element={<TicketList />} />
+        <Route path="/ticketForm" element={<TicketForm />} /> 
+
+      </Routes>
+    </Router>
   );
 }
 
