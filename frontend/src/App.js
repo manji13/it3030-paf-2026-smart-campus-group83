@@ -43,18 +43,13 @@ function App() {
           <Route path="/facilities" element={<FacilityCatalogue />} />
           <Route path="/facilities/new" element={<FacilityForm />} />
           <Route path="/facilities/edit/:id" element={<FacilityForm />} />
+          
+          {/* Member 3 Routes */}
+          <Route path="/ticketList" element={<TicketList />} />
+          <Route path="/ticketForm" element={<TicketForm />} />
         </Routes>
       </Router>
     </GoogleOAuthProvider>
-    <Router>
-      {/* ONLY Page Navigation Paths go here. No UI! */}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/ticketList" element={<TicketList />} />
-        <Route path="/ticketForm" element={<TicketForm />} /> 
-
-      </Routes>
-    </Router>
   );
 }
 
