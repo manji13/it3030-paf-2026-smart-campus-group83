@@ -19,6 +19,10 @@ import StudentDashboard from './pages/Member 4/StudentDashboard';
 import FacilityCatalogue from './pages/member1/FacilityCatalogue';
 import FacilityForm from './pages/member1/FacilityForm';
 
+// Member 2 Pages
+import BookingList from './pages/member2/BookingList';
+import BookingForm from './pages/member2/BookingForm';
+
 const GOOGLE_CLIENT_ID = '1092425987615-n1n08cqpr6eos82binob7var1q8nsqrr.apps.googleusercontent.com';
 
 function App() {
@@ -43,6 +47,10 @@ function App() {
           <Route path="/facilities" element={<FacilityCatalogue />} />
           <Route path="/facilities/new" element={<FacilityForm />} />
           <Route path="/facilities/edit/:id" element={<FacilityForm />} />
+          
+          {/* Member 2 Routes */}
+          <Route path="/booking" element={<BookingList />} />
+          <Route path="/booking/new" element={<BookingForm />} />
           
           {/* Member 3 Routes */}
           <Route path="/ticketList" element={<TicketList />} />
