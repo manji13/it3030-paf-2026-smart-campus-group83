@@ -35,86 +35,50 @@ function ImageCard(props) {
 }
 
 function StatusEditor(props) {
-  var statusForm = props.statusForm;
+  var statusForm   = props.statusForm;
   var setStatusForm = props.setStatusForm;
-  var ticketId = props.ticketId;
-  var onSave = props.onSave;
-  var onCancel = props.onCancel;
-  var adminUsers = props.adminUsers || [];
+  var ticketId     = props.ticketId;
+  var onSave       = props.onSave;
+  var onCancel     = props.onCancel;
+  var adminUsers   = props.adminUsers || [];
 
   return (
-    <div className="mt-4 border-t pt-4 flex flex-col gap-2">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Update Status</p>
+    <div className="mt-4 border-t pt-4 flex flex-col gap-3">
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Assign Technician</p>
 
-      {/* Status dropdown */}
-      <select
-        value={statusForm.status}
-        onChange={function (e) {
-          var val = e.target.value;
-          setStatusForm({ ...statusForm, status: val });
-        }}
-        className="p-2 border border-gray-300 rounded-lg text-sm"
-      >
-        {STATUS_FLOW.map(function (s) {
-          return <option key={s} value={s}>{s}</option>;
-        })}
-      </select>
-
-      {/* Assign to technician — admin dropdown */}
+      {/* Technician dropdown — status is NOT changed by admin */}
       <div>
-        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1 block">Assign to Technician</label>
+        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1 block">Select Technician</label>
         <select
           value={statusForm.assignedToEmail}
-          onChange={function (e) {
+          onChange={function(e) {
             var selectedEmail = e.target.value;
-            var selectedAdmin = adminUsers.find(function (u) { return u.email === selectedEmail; });
-            var selectedName = selectedAdmin ? (selectedAdmin.name || selectedAdmin.email) : '';
+            var selected = adminUsers.find(function(u) { return u.email === selectedEmail; });
+            var selectedName = selected ? (selected.name || selected.email) : '';
             setStatusForm({ ...statusForm, assignedTo: selectedName, assignedToEmail: selectedEmail });
           }}
           className="w-full p-2 border border-indigo-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
         >
           <option value="">— Select technician —</option>
-          {adminUsers.map(function (admin) {
+          {adminUsers.map(function(u) {
             return (
-              <option key={admin.id} value={admin.email}>
-                {admin.name || admin.email} ({admin.email})
+              <option key={u.id} value={u.email}>
+                {u.name || u.email} ({u.email})
               </option>
             );
           })}
         </select>
         {statusForm.assignedTo && (
-          <p className="text-xs text-indigo-600 mt-1">Assigned to: <strong>{statusForm.assignedTo}</strong></p>
+          <p className="text-xs text-indigo-600 mt-1">Will assign to: <strong>{statusForm.assignedTo}</strong></p>
         )}
       </div>
 
-      <textarea
-        placeholder="Resolution notes"
-        value={statusForm.resolutionNotes}
-        onChange={function (e) {
-          var val = e.target.value;
-          setStatusForm({ ...statusForm, resolutionNotes: val });
-        }}
-        className="p-2 border border-gray-300 rounded-lg text-sm min-h-[60px]"
-      />
-
-      {statusForm.status === 'REJECTED' && (
-        <textarea
-          placeholder="Rejection reason *"
-          value={statusForm.rejectionReason}
-          onChange={function (e) {
-            var val = e.target.value;
-            setStatusForm({ ...statusForm, rejectionReason: val });
-          }}
-          className="p-2 border border-red-200 bg-red-50 rounded-lg text-sm min-h-[60px]"
-        />
-      )}
-
       <div className="flex gap-2">
         <button
-          onClick={function () { onSave(ticketId); }}
+          onClick={function() { onSave(ticketId); }}
           className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-indigo-700"
         >
-          Save
+          Assign
         </button>
         <button
           onClick={onCancel}
@@ -234,7 +198,7 @@ function TicketDetail(props) {
           onClick={function () { onEdit(ticket); }}
           className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700"
         >
-          Update Status
+          Assign Technician
         </button>
         <button
           onClick={function () { onDelete(ticket.id); }}
@@ -256,12 +220,14 @@ function TicketDetail(props) {
         />
       )}
 
-      {/* Comments */}
+      {/* Comments — only assigned technician can post */}
       <CommentSection
         ticketId={ticket.id}
         currentEmail={adminEmail}
         currentName={adminName}
         isAdmin={true}
+        assignedTechEmail={ticket.assignedToEmail || ''}
+        assignedTechName={ticket.assignedTo || ''}
       />
 
     </div>
@@ -333,6 +299,26 @@ export default function TicketList() {
   }
 
   useEffect(function () { fetchTickets(); }, []);
+
+  // Auto-poll every 30s so admin sees status updates made by technicians
+  useEffect(function() {
+    var interval = setInterval(function() {
+      fetch(BASE_URL + '/api/tickets')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          var sorted = data.sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+          setTickets(sorted);
+          // Sync selected ticket if open
+          setSelectedTicket(function(prev) {
+            if (!prev) return null;
+            var fresh = sorted.find(function(t) { return t.id === prev.id; });
+            return fresh || prev;
+          });
+        })
+        .catch(function() {});
+    }, 30000);
+    return function() { clearInterval(interval); };
+  }, []);
 
   // Fetch all TECHNICIAN users for assignment dropdown
   useEffect(function() {
