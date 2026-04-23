@@ -1,11 +1,12 @@
 package com.sliit.smartcampus.service.member3;
 
 import com.sliit.smartcampus.entity.member3.Ticket;
+import com.sliit.smartcampus.enums.TicketStatus;
 import com.sliit.smartcampus.repository.member3.TicketRepository;
-import com.sliit.smartcampus.service.member4.NotificationService; // Import Member 4's service
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,32 +15,21 @@ import java.util.Optional;
 public class TicketService {
 
     private final TicketRepository ticketRepository;
-    
-    // Inject the NotificationService here
-    private final NotificationService notificationService;
 
     public Ticket createTicket(Ticket ticket) {
-        // 1. Save the ticket first to ensure it's successfully created
-        Ticket savedTicket = ticketRepository.save(ticket);
-        
-        // 2. Trigger the notification (Member 4's logic)
-        try {
-            String title = "New Ticket: " + savedTicket.getResource();
-            String message = "Priority: " + savedTicket.getPriority() + " | Location: " + savedTicket.getLocation();
-            String targetPath = "/ticketList"; // Directs admin to the Ticket View List
-            
-            notificationService.createNotification(title, message, targetPath);
-        } catch (Exception e) {
-            // Log error so a notification failure doesn't break the ticket creation
-            System.err.println("Failed to create notification for ticket: " + e.getMessage());
-        }
-
-        // 3. Return the saved ticket
-        return savedTicket;
+        ticket.setStatus(TicketStatus.OPEN);
+        ticket.setCreatedAt(LocalDateTime.now());
+        ticket.setUpdatedAt(LocalDateTime.now());
+        return ticketRepository.save(ticket);
     }
 
     public List<Ticket> getAllTickets() {
         return ticketRepository.findAll();
+    }
+
+    // 🔐 Only this user's tickets
+    public List<Ticket> getTicketsByUser(String userEmail) {
+        return ticketRepository.findByUserEmail(userEmail);
     }
 
     public Optional<Ticket> getTicketById(String id) {
@@ -47,8 +37,31 @@ public class TicketService {
     }
 
     public Ticket updateTicket(String id, Ticket updatedTicket) {
-        updatedTicket.setId(id);
-        return ticketRepository.save(updatedTicket);
+        return ticketRepository.findById(id).map(existing -> {
+            existing.setResource(updatedTicket.getResource());
+            existing.setLocation(updatedTicket.getLocation());
+            existing.setCategory(updatedTicket.getCategory());
+            existing.setDescription(updatedTicket.getDescription());
+            existing.setPriority(updatedTicket.getPriority());
+            existing.setContactDetails(updatedTicket.getContactDetails());
+            existing.setImageUrls(updatedTicket.getImageUrls());
+            existing.setUpdatedAt(LocalDateTime.now());
+            return ticketRepository.save(existing);
+        }).orElseThrow(() -> new RuntimeException("Ticket not found: " + id));
+    }
+
+    // 🔄 Admin/Technician: update status, assign, add notes
+    public Ticket updateTicketStatus(String id, TicketStatus status,
+                                     String assignedTo, String resolutionNotes,
+                                     String rejectionReason) {
+        return ticketRepository.findById(id).map(existing -> {
+            existing.setStatus(status);
+            if (assignedTo != null) existing.setAssignedTo(assignedTo);
+            if (resolutionNotes != null) existing.setResolutionNotes(resolutionNotes);
+            if (rejectionReason != null) existing.setRejectionReason(rejectionReason);
+            existing.setUpdatedAt(LocalDateTime.now());
+            return ticketRepository.save(existing);
+        }).orElseThrow(() -> new RuntimeException("Ticket not found: " + id));
     }
 
     public void deleteTicket(String id) {

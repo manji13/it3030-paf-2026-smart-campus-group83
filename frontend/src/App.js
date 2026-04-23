@@ -5,8 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 // Shared Components
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
-import TicketForm from './pages/member3/TicketForm';
-import TicketList from './pages/member3/TicketList';
+
 
 // Member 4 Pages
 import Login from './pages/Member 4/Login';
@@ -19,6 +18,11 @@ import Notifications from './pages/Member 4/Notifications';
 // Member 1 Pages
 import FacilityCatalogue from './pages/member1/FacilityCatalogue';
 import FacilityForm from './pages/member1/FacilityForm';
+
+//member3
+import MyTickets from './pages/member3/MyTicket';
+import TicketForm from './pages/member3/TicketForm';
+import TicketList from './pages/member3/TicketList';
 
 const GOOGLE_CLIENT_ID = '1092425987615-n1n08cqpr6eos82binob7var1q8nsqrr.apps.googleusercontent.com';
 
@@ -46,6 +50,7 @@ function App() {
           {/* Member 3 Routes */}
           <Route path="/ticketList" element={<TicketList />} />
           <Route path="/ticketForm" element={<TicketForm />} />
+          <Route path="/my-tickets" element={<MyTickets />} />
         </Routes>
       </Router>
     </GoogleOAuthProvider>
