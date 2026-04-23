@@ -14,6 +14,7 @@ import Register from './pages/Member 4/Registeer.js'; // Note: check if "Registe
 import UserManagement from './pages/Member 4/User.js';
 import AdminDashboard from './pages/Member 4/AdminDashboard';
 import StudentDashboard from './pages/Member 4/StudentDashboard';
+import Notifications from './pages/Member 4/Notifications';
 
 // Member 1 Pages
 import FacilityCatalogue from './pages/member1/FacilityCatalogue';
@@ -29,9 +30,6 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Router>
-        {/* Navbar sits outside Routes so it renders on every page */}
-        <Navbar /> 
-        
         <Routes>
           {/* Main Route */}
           <Route path="/" element={<Home />} />
@@ -42,6 +40,7 @@ function App() {
           <Route path="/users" element={<UserManagement />} />
           <Route path="/admin-page" element={<AdminDashboard />} />
           <Route path="/student-page" element={<StudentDashboard />} />
+          <Route path="/notifications" element={<Notifications />} />
           
           {/* Member 1 Routes */}
           <Route path="/facilities" element={<FacilityCatalogue />} />

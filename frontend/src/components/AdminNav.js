@@ -44,6 +44,7 @@ export default function AdminNav({ userName, userEmail, onLogout }) {
     // Determine active tab based on current path
     const isDashboardActive = location.pathname === '/admin-page';
     const isUsersActive = location.pathname === '/users';
+    const isTicketListActive = location.pathname === '/ticketList';
 
     const handleDashboardClick = () => {
         navigate('/admin-page');
@@ -51,6 +52,10 @@ export default function AdminNav({ userName, userEmail, onLogout }) {
 
     const handleUsersClick = () => {
         navigate('/users');
+    };
+
+    const handleTicketListClick = () => {
+        navigate('/ticketList');
     };
 
     const handleLogout = () => {
@@ -94,12 +99,40 @@ export default function AdminNav({ userName, userEmail, onLogout }) {
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                             </svg>
-                            <span>Users</span>
+                            <span className="hidden sm:inline">Users</span>
+                            <span className="sm:hidden">Users</span>
+                        </button>
+
+                        <button
+                            onClick={handleTicketListClick}
+                            className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer flex items-center gap-2 ${getButtonClasses(isTicketListActive)}`}
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                            </svg>
+                            <span className="hidden sm:inline">Ticket View List</span>
+                            <span className="sm:hidden">Tickets</span>
                         </button>
                     </div>
 
-                    {/* Right Side - Theme Toggle & User Menu */}
+                    {/* Right Side - Notifications, Theme Toggle & User Menu */}
                     <div className="flex items-center gap-2 sm:gap-4">
+                        
+                        {/* Notification Icon Button */}
+                        <button
+                            onClick={() => navigate('/notifications')}
+                            className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                                isDarkMode
+                                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                            }`}
+                            aria-label="Notifications"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                        </button>
+
                         {/* Theme Toggle Button */}
                         <button
                             onClick={toggleTheme}
