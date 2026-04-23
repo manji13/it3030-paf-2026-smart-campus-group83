@@ -14,6 +14,7 @@ import UserManagement from './pages/Member 4/User.js';
 import AdminDashboard from './pages/Member 4/AdminDashboard';
 import StudentDashboard from './pages/Member 4/StudentDashboard';
 import Notifications from './pages/Member 4/Notifications';
+import UserNotifications from './pages/Member 4/UserNotifications';
 
 // Member 1 Pages
 import FacilityCatalogue from './pages/member1/FacilityCatalogue';
@@ -41,6 +42,7 @@ function App() {
           <Route path="/admin-page" element={<AdminDashboard />} />
           <Route path="/student-page" element={<StudentDashboard />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/user-notifications" element={<UserNotifications />} />
           
           {/* Member 1 Routes */}
           <Route path="/facilities" element={<FacilityCatalogue />} />

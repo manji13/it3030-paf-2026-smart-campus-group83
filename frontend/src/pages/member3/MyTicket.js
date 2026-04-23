@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import CommentSection from './CommentSection';
+import UserNav from '../../components/UserNav';
+
 
 const STATUS_COLORS = {
   OPEN: 'bg-blue-100 text-blue-700',
@@ -170,17 +172,21 @@ export default function MyTickets() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto my-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <UserNav />
 
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-indigo-700">My Tickets</h2>
-        <p className="text-sm text-gray-400 mt-1">
-          Logged in as: <span className="font-medium text-gray-600">{userEmail}</span>
-          {' · '}
-          <span className="font-medium text-indigo-500">{tickets.length} ticket(s)</span>
-        </p>
-      </div>
+      <div className="max-w-3xl mx-auto my-8 px-4">
+
+        {/* Header */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-indigo-700">My Tickets</h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Logged in as: <span className="font-medium text-gray-600">{userEmail}</span>
+            {' · '}
+            <span className="font-medium text-indigo-500">{tickets.length} ticket(s)</span>
+          </p>
+        </div>
+
 
       {/* Empty State */}
       {tickets.length === 0 && (
@@ -207,6 +213,7 @@ export default function MyTickets() {
         </div>
       )}
 
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import com.sliit.smartcampus.enums.TicketStatus;
 import com.sliit.smartcampus.service.member3.TicketService;
 import com.sliit.smartcampus.service.member3.CommentService;
 import com.sliit.smartcampus.service.member3.ImageStorageService;
+import com.sliit.smartcampus.service.member4.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +30,7 @@ public class TicketController {
     private final TicketMapper ticketMapper;
     private final ImageStorageService imageStorageService;
     private final CommentService commentService;
+    private final NotificationService notificationService;
 
     @GetMapping("/test")
     public String test() { return "WORKING"; }
@@ -37,7 +39,9 @@ public class TicketController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Ticket> createTicket(@Valid @RequestBody TicketRequest request) {
         Ticket ticket = ticketMapper.toEntity(request);
-        return new ResponseEntity<>(ticketService.createTicket(ticket), HttpStatus.CREATED);
+        Ticket saved = ticketService.createTicket(ticket);
+        fireTicketCreatedNotifications(saved);
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
 
     // Create ticket with images (multipart)
@@ -54,7 +58,9 @@ public class TicketController {
         request.setImageUrls(imageUrls);
 
         Ticket ticket = ticketMapper.toEntity(request);
-        return new ResponseEntity<>(ticketService.createTicket(ticket), HttpStatus.CREATED);
+        Ticket saved = ticketService.createTicket(ticket);
+        fireTicketCreatedNotifications(saved);
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
 
     // GET all tickets (admin)
@@ -63,7 +69,7 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getAllTickets());
     }
 
-    // 🔐 GET tickets by user email — student sees only their own
+    // GET tickets by user email — student sees only their own
     @GetMapping("/my")
     public ResponseEntity<List<Ticket>> getMyTickets(@RequestParam String email) {
         return ResponseEntity.ok(ticketService.getTicketsByUser(email));
@@ -83,7 +89,7 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.updateTicket(id, updatedTicket));
     }
 
-    // 🔄 Admin/Technician: update status workflow
+    // Admin/Technician: update status workflow
     @PatchMapping("/{id}/status")
     public ResponseEntity<Ticket> updateStatus(
             @PathVariable String id,
@@ -94,15 +100,53 @@ public class TicketController {
         String resolutionNotes = payload.get("resolutionNotes");
         String rejectionReason = payload.get("rejectionReason");
 
-        return ResponseEntity.ok(
-            ticketService.updateTicketStatus(id, status, assignedTo, resolutionNotes, rejectionReason)
-        );
+        Ticket updated = ticketService.updateTicketStatus(id, status, assignedTo, resolutionNotes, rejectionReason);
+
+        // Notify the ticket submitter about the status change
+        if (updated.getUserEmail() != null && !updated.getUserEmail().isEmpty()) {
+            String statusLabel = status.name();
+            String title = "Ticket Status Updated: " + statusLabel;
+            String message = "Your ticket \"" + updated.getResource() + "\" (" + updated.getCategory() + ") "
+                    + "status has been changed to " + statusLabel + ".";
+            if (resolutionNotes != null && !resolutionNotes.isEmpty()) {
+                message += " Note: " + resolutionNotes;
+            }
+            if (rejectionReason != null && !rejectionReason.isEmpty()) {
+                message += " Reason: " + rejectionReason;
+            }
+            notificationService.createUserNotification(updated.getUserEmail(), title, message, "/my-tickets");
+        }
+
+        return ResponseEntity.ok(updated);
     }
 
-   @DeleteMapping("/{id}")
-public ResponseEntity<Void> deleteTicket(@PathVariable String id) {
-    commentService.deleteCommentsByTicket(id); // cleanup comments first
-    ticketService.deleteTicket(id);
-    return ResponseEntity.noContent().build();
-}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTicket(@PathVariable String id) {
+        commentService.deleteCommentsByTicket(id); // cleanup comments first
+        ticketService.deleteTicket(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /** Fires both admin and user notifications when a ticket is created. */
+    private void fireTicketCreatedNotifications(Ticket ticket) {
+        String userEmail = ticket.getUserEmail() != null ? ticket.getUserEmail() : "Unknown";
+        String resource  = ticket.getResource()  != null ? ticket.getResource()  : "N/A";
+        String location  = ticket.getLocation()  != null ? ticket.getLocation()  : "N/A";
+        String category  = ticket.getCategory()  != null ? ticket.getCategory()  : "N/A";
+
+        // 1. Admin notification
+        String adminTitle   = "New Ticket Submitted";
+        String adminMessage = "User: " + userEmail
+                + " | Resource: " + resource
+                + " | Category: " + category
+                + " | Location: " + location;
+        notificationService.createAdminNotification(adminTitle, adminMessage, "/ticketList", userEmail);
+
+        // 2. User (submitter) notification
+        String userTitle   = "Ticket Submitted Successfully";
+        String userMessage = "Your ticket for \"" + resource + "\" (" + category + ") has been received and is now OPEN.";
+        notificationService.createUserNotification(userEmail, userTitle, userMessage, "/my-tickets");
+    }
 }

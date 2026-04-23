@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import CommentSection from '../member3/CommentSection';
+import AdminNav from '../../components/AdminNav';
 
 const STATUS_FLOW = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED'];
 
@@ -361,7 +362,10 @@ export default function TicketList() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+      <AdminNav />
+
+      <div className="flex flex-1 overflow-hidden">
 
       {/* LEFT PANEL — ticket list */}
       <div className="w-full max-w-sm border-r border-gray-200 bg-white flex flex-col flex-shrink-0">
@@ -471,6 +475,8 @@ export default function TicketList() {
             <p className="text-sm mt-1">Click any ticket from the list</p>
           </div>
         )}
+      </div>
+
       </div>
 
     </div>
