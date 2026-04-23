@@ -95,9 +95,9 @@ export default function UserManagement() {
     );
 
     const getRoleBadgeColor = (role) => {
-        return role === 'ADMIN' 
-            ? 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700' 
-            : 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700';
+        if (role === 'ADMIN') return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700';
+        if (role === 'TECHNICIAN') return 'bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-700';
+        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700';
     };
 
     return (
@@ -149,6 +149,10 @@ export default function UserManagement() {
                                 <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-gray-700">
                                     <p className="text-xs text-gray-400">Admins</p>
                                     <p className="text-2xl font-bold text-purple-400">{users.filter(u => u.role === 'ADMIN').length}</p>
+                                </div>
+                                <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-gray-700">
+                                    <p className="text-xs text-gray-400">Technicians</p>
+                                    <p className="text-2xl font-bold text-teal-400">{users.filter(u => u.role === 'TECHNICIAN').length}</p>
                                 </div>
                                 <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-gray-700">
                                     <p className="text-xs text-gray-400">Users</p>
@@ -227,6 +231,7 @@ export default function UserManagement() {
                                                         className="bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent cursor-pointer transition-all duration-200 hover:bg-gray-600"
                                                     >
                                                         <option value="USER">USER</option>
+                                                        <option value="TECHNICIAN">TECHNICIAN</option>
                                                         <option value="ADMIN">ADMIN</option>
                                                     </select>
                                                 </td>

@@ -52,11 +52,12 @@ public class TicketService {
 
     // 🔄 Admin/Technician: update status, assign, add notes
     public Ticket updateTicketStatus(String id, TicketStatus status,
-                                     String assignedTo, String resolutionNotes,
-                                     String rejectionReason) {
+                                     String assignedTo, String assignedToEmail,
+                                     String resolutionNotes, String rejectionReason) {
         return ticketRepository.findById(id).map(existing -> {
             existing.setStatus(status);
             if (assignedTo != null) existing.setAssignedTo(assignedTo);
+            if (assignedToEmail != null) existing.setAssignedToEmail(assignedToEmail);
             if (resolutionNotes != null) existing.setResolutionNotes(resolutionNotes);
             if (rejectionReason != null) existing.setRejectionReason(rejectionReason);
             existing.setUpdatedAt(LocalDateTime.now());

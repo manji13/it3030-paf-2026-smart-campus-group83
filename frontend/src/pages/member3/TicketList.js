@@ -28,7 +28,7 @@ function ImageCard(props) {
         src={fullUrl}
         alt="attachment"
         className="w-20 h-20 object-cover rounded-xl border border-gray-200 hover:opacity-80 transition cursor-pointer shadow-sm"
-        onError={function(e) { e.target.style.display = 'none'; }}
+        onError={function (e) { e.target.style.display = 'none'; }}
       />
     </a>
   );
@@ -40,39 +40,59 @@ function StatusEditor(props) {
   var ticketId = props.ticketId;
   var onSave = props.onSave;
   var onCancel = props.onCancel;
+  var adminUsers = props.adminUsers || [];
 
   return (
     <div className="mt-4 border-t pt-4 flex flex-col gap-2">
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Update Status</p>
+
+      {/* Status dropdown */}
       <select
         value={statusForm.status}
-        onChange={function(e) {
+        onChange={function (e) {
           var val = e.target.value;
-          setStatusForm({ status: val, assignedTo: statusForm.assignedTo, resolutionNotes: statusForm.resolutionNotes, rejectionReason: statusForm.rejectionReason });
+          setStatusForm({ ...statusForm, status: val });
         }}
         className="p-2 border border-gray-300 rounded-lg text-sm"
       >
-        {STATUS_FLOW.map(function(s) {
+        {STATUS_FLOW.map(function (s) {
           return <option key={s} value={s}>{s}</option>;
         })}
       </select>
 
-      <input
-        placeholder="Assign to (technician name)"
-        value={statusForm.assignedTo}
-        onChange={function(e) {
-          var val = e.target.value;
-          setStatusForm({ status: statusForm.status, assignedTo: val, resolutionNotes: statusForm.resolutionNotes, rejectionReason: statusForm.rejectionReason });
-        }}
-        className="p-2 border border-gray-300 rounded-lg text-sm"
-      />
+      {/* Assign to technician — admin dropdown */}
+      <div>
+        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1 block">Assign to Technician</label>
+        <select
+          value={statusForm.assignedToEmail}
+          onChange={function (e) {
+            var selectedEmail = e.target.value;
+            var selectedAdmin = adminUsers.find(function (u) { return u.email === selectedEmail; });
+            var selectedName = selectedAdmin ? (selectedAdmin.name || selectedAdmin.email) : '';
+            setStatusForm({ ...statusForm, assignedTo: selectedName, assignedToEmail: selectedEmail });
+          }}
+          className="w-full p-2 border border-indigo-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+        >
+          <option value="">— Select technician —</option>
+          {adminUsers.map(function (admin) {
+            return (
+              <option key={admin.id} value={admin.email}>
+                {admin.name || admin.email} ({admin.email})
+              </option>
+            );
+          })}
+        </select>
+        {statusForm.assignedTo && (
+          <p className="text-xs text-indigo-600 mt-1">Assigned to: <strong>{statusForm.assignedTo}</strong></p>
+        )}
+      </div>
 
       <textarea
         placeholder="Resolution notes"
         value={statusForm.resolutionNotes}
-        onChange={function(e) {
+        onChange={function (e) {
           var val = e.target.value;
-          setStatusForm({ status: statusForm.status, assignedTo: statusForm.assignedTo, resolutionNotes: val, rejectionReason: statusForm.rejectionReason });
+          setStatusForm({ ...statusForm, resolutionNotes: val });
         }}
         className="p-2 border border-gray-300 rounded-lg text-sm min-h-[60px]"
       />
@@ -81,9 +101,9 @@ function StatusEditor(props) {
         <textarea
           placeholder="Rejection reason *"
           value={statusForm.rejectionReason}
-          onChange={function(e) {
+          onChange={function (e) {
             var val = e.target.value;
-            setStatusForm({ status: statusForm.status, assignedTo: statusForm.assignedTo, resolutionNotes: statusForm.resolutionNotes, rejectionReason: val });
+            setStatusForm({ ...statusForm, rejectionReason: val });
           }}
           className="p-2 border border-red-200 bg-red-50 rounded-lg text-sm min-h-[60px]"
         />
@@ -91,7 +111,7 @@ function StatusEditor(props) {
 
       <div className="flex gap-2">
         <button
-          onClick={function() { onSave(ticketId); }}
+          onClick={function () { onSave(ticketId); }}
           className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-indigo-700"
         >
           Save
@@ -201,7 +221,7 @@ function TicketDetail(props) {
         <div className="mb-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Attachments</p>
           <div className="flex gap-2 flex-wrap">
-            {ticket.imageUrls.map(function(url, i) {
+            {ticket.imageUrls.map(function (url, i) {
               return <ImageCard key={i} url={url} />;
             })}
           </div>
@@ -211,13 +231,13 @@ function TicketDetail(props) {
       {/* Action Buttons */}
       <div className="flex gap-2 mb-4">
         <button
-          onClick={function() { onEdit(ticket); }}
+          onClick={function () { onEdit(ticket); }}
           className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700"
         >
           Update Status
         </button>
         <button
-          onClick={function() { onDelete(ticket.id); }}
+          onClick={function () { onDelete(ticket.id); }}
           className="bg-red-50 text-red-500 border border-red-200 px-4 py-2 rounded-lg text-sm hover:bg-red-100"
         >
           Delete Ticket
@@ -232,6 +252,7 @@ function TicketDetail(props) {
           setStatusForm={setStatusForm}
           onSave={onSave}
           onCancel={onCancel}
+          adminUsers={props.adminUsers}
         />
       )}
 
@@ -273,9 +294,14 @@ export default function TicketList() {
   var editingId = editingState[0];
   var setEditingId = editingState[1];
 
-  var statusFormState = useState({ status: '', assignedTo: '', resolutionNotes: '', rejectionReason: '' });
+  var statusFormState = useState({ status: '', assignedTo: '', assignedToEmail: '', resolutionNotes: '', rejectionReason: '' });
   var statusForm = statusFormState[0];
   var setStatusForm = statusFormState[1];
+
+  // Admin users list (for technician dropdown)
+  var adminUsersState = useState([]);
+  var adminUsers = adminUsersState[0];
+  var setAdminUsers = adminUsersState[1];
 
   var filterState = useState('ALL');
   var filterStatus = filterState[0];
@@ -288,31 +314,40 @@ export default function TicketList() {
   function fetchTickets() {
     setLoading(true);
     fetch(BASE_URL + '/api/tickets')
-      .then(function(res) {
+      .then(function (res) {
         if (!res.ok) throw new Error('Failed to load tickets');
         return res.json();
       })
-      .then(function(data) {
+      .then(function (data) {
         // Sort newest first
-        var sorted = data.sort(function(a, b) {
+        var sorted = data.sort(function (a, b) {
           return new Date(b.createdAt) - new Date(a.createdAt);
         });
         setTickets(sorted);
         setLoading(false);
       })
-      .catch(function(err) {
+      .catch(function (err) {
         setError(err.message);
         setLoading(false);
       });
   }
 
-  useEffect(function() { fetchTickets(); }, []);
+  useEffect(function () { fetchTickets(); }, []);
+
+  // Fetch all TECHNICIAN users for assignment dropdown
+  useEffect(function() {
+    fetch(BASE_URL + '/api/users/technicians')
+      .then(function(res) { return res.json(); })
+      .then(function(data) { setAdminUsers(data); })
+      .catch(function() {});
+  }, []);
 
   function openEdit(ticket) {
     setEditingId(ticket.id);
     setStatusForm({
       status: ticket.status,
       assignedTo: ticket.assignedTo || '',
+      assignedToEmail: ticket.assignedToEmail || '',
       resolutionNotes: ticket.resolutionNotes || '',
       rejectionReason: ticket.rejectionReason || '',
     });
@@ -324,12 +359,12 @@ export default function TicketList() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(statusForm),
     })
-      .then(function(res) {
+      .then(function (res) {
         if (!res.ok) throw new Error('Update failed');
         setEditingId(null);
         fetchTickets();
       })
-      .catch(function(err) {
+      .catch(function (err) {
         alert(err.message);
       });
   }
@@ -337,14 +372,14 @@ export default function TicketList() {
   function handleDelete(id) {
     if (!window.confirm('Delete this ticket?')) return;
     fetch(BASE_URL + '/api/tickets/' + id, { method: 'DELETE' })
-      .then(function() {
+      .then(function () {
         setSelectedTicket(null);
         fetchTickets();
       });
   }
 
   // Filter + search
-  var filtered = tickets.filter(function(t) {
+  var filtered = tickets.filter(function (t) {
     var matchStatus = filterStatus === 'ALL' || t.status === filterStatus;
     var matchSearch = !searchText ||
       (t.resource && t.resource.toLowerCase().indexOf(searchText.toLowerCase()) !== -1) ||
@@ -367,115 +402,116 @@ export default function TicketList() {
 
       <div className="flex flex-1 overflow-hidden">
 
-      {/* LEFT PANEL — ticket list */}
-      <div className="w-full max-w-sm border-r border-gray-200 bg-white flex flex-col flex-shrink-0">
+        {/* LEFT PANEL — ticket list */}
+        <div className="w-full max-w-sm border-r border-gray-200 bg-white flex flex-col flex-shrink-0">
 
-        {/* Top bar */}
-        <div className="p-4 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-indigo-700 mb-3">All Tickets</h2>
+          {/* Top bar */}
+          <div className="p-4 border-b border-gray-100">
+            <h2 className="text-lg font-bold text-indigo-700 mb-3">All Tickets</h2>
 
-          {/* Search */}
-          <input
-            placeholder="Search by resource, email..."
-            value={searchText}
-            onChange={function(e) { setSearchText(e.target.value); }}
-            className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 mb-3"
-          />
+            {/* Search */}
+            <input
+              placeholder="Search by resource, email..."
+              value={searchText}
+              onChange={function (e) { setSearchText(e.target.value); }}
+              className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 mb-3"
+            />
 
-          {/* Filter pills */}
-          <div className="flex gap-1.5 flex-wrap">
-            {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED'].map(function(s) {
-              var active = filterStatus === s;
-              var cls = active
-                ? 'px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-600 text-white'
-                : 'px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 hover:bg-gray-200';
+            {/* Filter pills */}
+            <div className="flex gap-1.5 flex-wrap">
+              {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED'].map(function (s) {
+                var active = filterStatus === s;
+                var cls = active
+                  ? 'px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-600 text-white'
+                  : 'px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 hover:bg-gray-200';
+                return (
+                  <button key={s} onClick={function () { setFilterStatus(s); }} className={cls}>
+                    {s}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Ticket rows */}
+          <div className="overflow-y-auto flex-1">
+            {filtered.length === 0 && (
+              <div className="text-center py-10 text-gray-400 text-sm">No tickets found</div>
+            )}
+            {filtered.map(function (ticket) {
+              var isSelected = selectedTicket && selectedTicket.id === ticket.id;
+              var statusColor = STATUS_COLORS[ticket.status] || 'bg-gray-100 text-gray-500';
+
+              var dateStr = '';
+              if (ticket.createdAt) {
+                dateStr = new Date(ticket.createdAt).toLocaleDateString('en-US', {
+                  month: 'short', day: 'numeric'
+                });
+              }
+
+              var rowClass = isSelected
+                ? 'px-4 py-3 border-b border-gray-100 cursor-pointer bg-indigo-50 border-l-4 border-l-indigo-500'
+                : 'px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 border-l-4 border-l-transparent';
+
               return (
-                <button key={s} onClick={function() { setFilterStatus(s); }} className={cls}>
-                  {s}
-                </button>
+                <div
+                  key={ticket.id}
+                  onClick={function () { setSelectedTicket(ticket); setEditingId(null); }}
+                  className={rowClass}
+                >
+                  {/* Row: email + date */}
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-xs font-semibold text-gray-700 truncate max-w-[160px]">
+                      {ticket.userEmail || 'Unknown'}
+                    </span>
+                    <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{dateStr}</span>
+                  </div>
+
+                  {/* Row: resource name */}
+                  <p className="text-sm font-medium text-gray-800 truncate">{ticket.resource}</p>
+
+                  {/* Row: category + status badge */}
+                  <div className="flex items-center justify-between mt-1">
+                    <p className="text-xs text-gray-400 truncate">{ticket.category}</p>
+                    <span className={'text-xs px-2 py-0.5 rounded-full font-medium ml-2 ' + statusColor}>
+                      {ticket.status}
+                    </span>
+                  </div>
+                </div>
               );
             })}
           </div>
-        </div>
 
-        {/* Ticket rows */}
-        <div className="overflow-y-auto flex-1">
-          {filtered.length === 0 && (
-            <div className="text-center py-10 text-gray-400 text-sm">No tickets found</div>
-          )}
-          {filtered.map(function(ticket) {
-            var isSelected = selectedTicket && selectedTicket.id === ticket.id;
-            var statusColor = STATUS_COLORS[ticket.status] || 'bg-gray-100 text-gray-500';
-
-            var dateStr = '';
-            if (ticket.createdAt) {
-              dateStr = new Date(ticket.createdAt).toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric'
-              });
-            }
-
-            var rowClass = isSelected
-              ? 'px-4 py-3 border-b border-gray-100 cursor-pointer bg-indigo-50 border-l-4 border-l-indigo-500'
-              : 'px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 border-l-4 border-l-transparent';
-
-            return (
-              <div
-                key={ticket.id}
-                onClick={function() { setSelectedTicket(ticket); setEditingId(null); }}
-                className={rowClass}
-              >
-                {/* Row: email + date */}
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs font-semibold text-gray-700 truncate max-w-[160px]">
-                    {ticket.userEmail || 'Unknown'}
-                  </span>
-                  <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{dateStr}</span>
-                </div>
-
-                {/* Row: resource name */}
-                <p className="text-sm font-medium text-gray-800 truncate">{ticket.resource}</p>
-
-                {/* Row: category + status badge */}
-                <div className="flex items-center justify-between mt-1">
-                  <p className="text-xs text-gray-400 truncate">{ticket.category}</p>
-                  <span className={'text-xs px-2 py-0.5 rounded-full font-medium ml-2 ' + statusColor}>
-                    {ticket.status}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Footer count */}
-        <div className="p-3 border-t border-gray-100 text-xs text-gray-400 text-center">
-          {filtered.length} of {tickets.length} tickets
-        </div>
-      </div>
-
-      {/* RIGHT PANEL — ticket detail */}
-      <div className="flex-1 overflow-hidden">
-        {selectedTicket ? (
-          <TicketDetail
-            ticket={selectedTicket}
-            adminEmail={adminEmail}
-            adminName={adminName}
-            editingId={editingId}
-            statusForm={statusForm}
-            setStatusForm={setStatusForm}
-            onEdit={openEdit}
-            onDelete={handleDelete}
-            onSave={handleStatusUpdate}
-            onCancel={function() { setEditingId(null); }}
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400">
-            <p className="text-4xl mb-3">📋</p>
-            <p className="text-base font-medium">Select a ticket to view details</p>
-            <p className="text-sm mt-1">Click any ticket from the list</p>
+          {/* Footer count */}
+          <div className="p-3 border-t border-gray-100 text-xs text-gray-400 text-center">
+            {filtered.length} of {tickets.length} tickets
           </div>
-        )}
-      </div>
+        </div>
+
+        {/* RIGHT PANEL — ticket detail */}
+        <div className="flex-1 overflow-hidden">
+          {selectedTicket ? (
+            <TicketDetail
+              ticket={selectedTicket}
+              adminEmail={adminEmail}
+              adminName={adminName}
+              adminUsers={adminUsers}
+              editingId={editingId}
+              statusForm={statusForm}
+              setStatusForm={setStatusForm}
+              onEdit={openEdit}
+              onDelete={handleDelete}
+              onSave={handleStatusUpdate}
+              onCancel={function () { setEditingId(null); }}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+              <p className="text-4xl mb-3">📋</p>
+              <p className="text-base font-medium">Select a ticket to view details</p>
+              <p className="text-sm mt-1">Click any ticket from the list</p>
+            </div>
+          )}
+        </div>
 
       </div>
 

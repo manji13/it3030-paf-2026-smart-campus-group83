@@ -24,6 +24,8 @@ import FacilityForm from './pages/member1/FacilityForm';
 import MyTickets from './pages/member3/MyTicket';
 import TicketForm from './pages/member3/TicketForm';
 import TicketList from './pages/member3/TicketList';
+import TechnicianTickets from './pages/member3/TechnicianTickets';
+import TechnicianNotifications from './pages/member3/TechnicianNotifications';
 
 const GOOGLE_CLIENT_ID = '1092425987615-n1n08cqpr6eos82binob7var1q8nsqrr.apps.googleusercontent.com';
 
@@ -53,6 +55,8 @@ function App() {
           <Route path="/ticketList" element={<TicketList />} />
           <Route path="/ticketForm" element={<TicketForm />} />
           <Route path="/my-tickets" element={<MyTickets />} />
+          <Route path="/technician-tickets" element={<TechnicianTickets />} />
+          <Route path="/technician-notifications" element={<TechnicianNotifications />} />
         </Routes>
       </Router>
     </GoogleOAuthProvider>

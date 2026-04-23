@@ -96,11 +96,13 @@ public class TicketController {
             @RequestBody Map<String, String> payload) {
 
         TicketStatus status = TicketStatus.valueOf(payload.get("status"));
-        String assignedTo = payload.get("assignedTo");
+        String assignedTo      = payload.get("assignedTo");
+        String assignedToEmail = payload.get("assignedToEmail");
         String resolutionNotes = payload.get("resolutionNotes");
         String rejectionReason = payload.get("rejectionReason");
 
-        Ticket updated = ticketService.updateTicketStatus(id, status, assignedTo, resolutionNotes, rejectionReason);
+        Ticket updated = ticketService.updateTicketStatus(
+                id, status, assignedTo, assignedToEmail, resolutionNotes, rejectionReason);
 
         // Notify the ticket submitter about the status change
         if (updated.getUserEmail() != null && !updated.getUserEmail().isEmpty()) {
@@ -115,6 +117,14 @@ public class TicketController {
                 message += " Reason: " + rejectionReason;
             }
             notificationService.createUserNotification(updated.getUserEmail(), title, message, "/my-tickets");
+        }
+
+        // Notify the assigned technician when a ticket is assigned to them
+        if (assignedToEmail != null && !assignedToEmail.isEmpty()) {
+            String techTitle   = "Ticket Assigned to You";
+            String techMessage = "Ticket \"" + updated.getResource() + "\" (" + updated.getCategory() + ") "
+                    + "has been assigned to you. Status: " + status.name() + ".";
+            notificationService.createUserNotification(assignedToEmail, techTitle, techMessage, "/technician-tickets");
         }
 
         return ResponseEntity.ok(updated);

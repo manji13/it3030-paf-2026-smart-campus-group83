@@ -65,7 +65,7 @@ function CommentItem(props) {
           <div className="mt-2 flex flex-col gap-2">
             <textarea
               value={editText}
-              onChange={function(e) { setEditText(e.target.value); }}
+              onChange={function (e) { setEditText(e.target.value); }}
               className="w-full p-2 border border-indigo-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 min-h-[70px]"
             />
             <div className="flex gap-2">
@@ -76,7 +76,7 @@ function CommentItem(props) {
                 Save
               </button>
               <button
-                onClick={function() { setIsEditing(false); setEditText(comment.text); }}
+                onClick={function () { setIsEditing(false); setEditText(comment.text); }}
                 className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-xs hover:bg-gray-200"
               >
                 Cancel
@@ -92,7 +92,7 @@ function CommentItem(props) {
           <div className="flex gap-3 mt-1">
             {canEdit && (
               <button
-                onClick={function() { setIsEditing(true); }}
+                onClick={function () { setIsEditing(true); }}
                 className="text-xs text-indigo-400 hover:text-indigo-600 transition"
               >
                 Edit
@@ -100,7 +100,7 @@ function CommentItem(props) {
             )}
             {canDelete && (
               <button
-                onClick={function() { onDelete(comment.id); }}
+                onClick={function () { onDelete(comment.id); }}
                 className="text-xs text-red-400 hover:text-red-600 transition"
               >
                 Delete
@@ -142,12 +142,12 @@ export default function CommentSection(props) {
   function fetchComments() {
     setLoading(true);
     fetch(BASE_URL + '/api/tickets/' + ticketId + '/comments')
-      .then(function(res) { return res.json(); })
-      .then(function(data) { setComments(data); setLoading(false); })
-      .catch(function() { setLoading(false); });
+      .then(function (res) { return res.json(); })
+      .then(function (data) { setComments(data); setLoading(false); })
+      .catch(function () { setLoading(false); });
   }
 
-  useEffect(function() {
+  useEffect(function () {
     if (isOpen) fetchComments();
   }, [isOpen, ticketId]);
 
@@ -161,16 +161,17 @@ export default function CommentSection(props) {
       body: JSON.stringify({
         authorEmail: currentEmail,
         authorName: currentName,
-        text: newText.trim()
+        text: newText.trim(),
+        isAdmin: isAdmin ? 'true' : 'false'
       })
     })
-      .then(function(res) { return res.json(); })
-      .then(function(newComment) {
+      .then(function (res) { return res.json(); })
+      .then(function (newComment) {
         setComments(comments.concat([newComment]));
         setNewText('');
         setSubmitting(false);
       })
-      .catch(function() { setSubmitting(false); });
+      .catch(function () { setSubmitting(false); });
   }
 
   function handleEdit(commentId, updatedText) {
@@ -179,13 +180,13 @@ export default function CommentSection(props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ requestEmail: currentEmail, text: updatedText })
     })
-      .then(function(res) { return res.json(); })
-      .then(function(updated) {
-        setComments(comments.map(function(c) {
+      .then(function (res) { return res.json(); })
+      .then(function (updated) {
+        setComments(comments.map(function (c) {
           return c.id === commentId ? updated : c;
         }));
       })
-      .catch(function() { alert('Failed to edit comment'); });
+      .catch(function () { alert('Failed to edit comment'); });
   }
 
   function handleDelete(commentId) {
@@ -193,10 +194,10 @@ export default function CommentSection(props) {
     fetch(BASE_URL + '/api/comments/' + commentId + '?requestEmail=' + encodeURIComponent(currentEmail) + '&isAdmin=' + isAdmin, {
       method: 'DELETE'
     })
-      .then(function() {
-        setComments(comments.filter(function(c) { return c.id !== commentId; }));
+      .then(function () {
+        setComments(comments.filter(function (c) { return c.id !== commentId; }));
       })
-      .catch(function() { alert('Failed to delete comment'); });
+      .catch(function () { alert('Failed to delete comment'); });
   }
 
   return (
@@ -204,7 +205,7 @@ export default function CommentSection(props) {
 
       {/* Toggle button */}
       <button
-        onClick={function() { setIsOpen(!isOpen); }}
+        onClick={function () { setIsOpen(!isOpen); }}
         className="flex items-center gap-2 text-xs text-indigo-500 font-medium hover:text-indigo-700 transition"
       >
         <span>{isOpen ? '▲' : '▼'}</span>
@@ -225,7 +226,7 @@ export default function CommentSection(props) {
 
           {!loading && comments.length > 0 && (
             <div className="mb-3">
-              {comments.map(function(comment) {
+              {comments.map(function (comment) {
                 return (
                   <CommentItem
                     key={comment.id}
@@ -244,7 +245,7 @@ export default function CommentSection(props) {
           <div className="flex gap-2 mt-2">
             <textarea
               value={newText}
-              onChange={function(e) { setNewText(e.target.value); }}
+              onChange={function (e) { setNewText(e.target.value); }}
               placeholder="Write a comment..."
               className="flex-1 p-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 min-h-[60px] resize-none"
             />

@@ -50,7 +50,9 @@ public class Ticket {
     // 🔄 Workflow fields
     private TicketStatus status = TicketStatus.OPEN;
 
-    private String assignedTo;         // technician/staff name or ID
+    private String assignedTo;         // technician/staff display name
+
+    private String assignedToEmail;    // technician/staff email (for notifications)
 
     private String resolutionNotes;    // filled when RESOLVED or REJECTED
 

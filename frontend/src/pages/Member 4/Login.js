@@ -153,6 +153,8 @@ export default function Login() {
         setTimeout(() => {
             if (redirectData?.role === 'ADMIN') {
                 navigate('/admin-page');
+            } else if (redirectData?.role === 'TECHNICIAN') {
+                navigate('/technician-tickets');
             } else {
                 navigate('/student-page');
             }
