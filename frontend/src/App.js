@@ -24,6 +24,7 @@ import FacilityForm from './pages/member1/FacilityForm';
 // Member 2 Pages
 import BookingList from './pages/member2/BookingList';
 import BookingForm from './pages/member2/BookingForm';
+import AdminBookingList from './pages/member2/AdminBookingList';
 
 const GOOGLE_CLIENT_ID = '1092425987615-n1n08cqpr6eos82binob7var1q8nsqrr.apps.googleusercontent.com';
 
@@ -51,6 +52,7 @@ function App() {
           {/* Member 2 Routes */}
           <Route path="/booking" element={<BookingList />} />
           <Route path="/booking/new" element={<BookingForm />} />
+          <Route path="/admin-page/bookings" element={<AdminBookingList />} />
           
           {/* Member 3 Routes */}
           <Route path="/ticketList" element={<TicketList />} />
