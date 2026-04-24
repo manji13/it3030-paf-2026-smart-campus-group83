@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/bookings';
+const API_URL = 'http://localhost:8000/api/bookings';
 
 const getUserId = () => {
     const user = JSON.parse(localStorage.getItem('user'));
