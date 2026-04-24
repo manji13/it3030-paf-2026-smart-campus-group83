@@ -22,7 +22,7 @@ export default function BookingForm() {
             try {
                 const response = await facilityService.getFacilities();
                 setFacilities(response.data || []);
-                if (response.data && response.data.length > 0) {
+                if (response.data?.length > 0) {
                     setFormData(prev => ({ ...prev, resourceId: response.data[0].id }));
                 }
             } catch (err) {
@@ -54,151 +54,100 @@ export default function BookingForm() {
         }
     };
 
-    return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="mx-auto h-16 w-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-3">
-                    <svg className="h-8 w-8 text-white transform -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                </div>
-                <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
-                    Request a Resource
-                </h2>
-                <p className="mt-2 text-center text-sm text-gray-600">
-                    Fill out the details below to book a facility.
-                </p>
-            </div>
+    const inputClass = "w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-150 placeholder-gray-400";
 
-            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10 border border-gray-100">
-                    <form className="space-y-6" onSubmit={handleSubmit}>
+    return (
+        <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-12 font-sans">
+            <div className="w-full max-w-md">
+
+                {/* Card */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+                    {/* Dark header */}
+                    <div className="bg-[#1a1a2e] px-8 py-7 relative">
+                        <span className="absolute top-5 right-5 inline-flex items-center gap-1.5 text-[11px] bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full">
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 inline-block"></span>
+                            Available now
+                        </span>
+                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-4">
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                                <rect x="3" y="4" width="18" height="18" rx="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                        </div>
+                        <h1 className="text-[22px] text-white font-serif font-normal tracking-tight">Reserve a Resource</h1>
+                        <p className="text-sm text-white/50 mt-1">Choose a facility and fill in your booking details.</p>
+                    </div>
+
+                    {/* Form body */}
+                    <form onSubmit={handleSubmit} className="px-8 py-7 space-y-5">
+
                         {error && (
-                            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
-                                <div className="flex">
-                                    <div className="flex-shrink-0">
-                                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-red-700">{error}</p>
-                                    </div>
-                                </div>
+                            <div className="flex items-start gap-3 bg-red-50 border border-red-100 text-red-700 text-sm px-4 py-3 rounded-lg">
+                                <svg className="w-4 h-4 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                                {error}
                             </div>
                         )}
 
+                        {/* Facility */}
                         <div>
-                            <label htmlFor="resourceId" className="block text-sm font-medium text-gray-700">Resource</label>
-                            <div className="mt-1">
-                                <select
-                                    id="resourceId"
-                                    name="resourceId"
-                                    required
-                                    value={formData.resourceId}
-                                    onChange={handleChange}
-                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200 bg-white"
-                                >
-                                    {facilities.map(fac => (
-                                        <option key={fac.id} value={fac.id}>{fac.name} ({fac.type})</option>
-                                    ))}
-                                </select>
-                            </div>
+                            <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Facility</label>
+                            <select name="resourceId" required value={formData.resourceId} onChange={handleChange}
+                                className={inputClass + " appearance-none cursor-pointer"}>
+                                {facilities.map(fac => (
+                                    <option key={fac.id} value={fac.id}>{fac.name} ({fac.type})</option>
+                                ))}
+                            </select>
                         </div>
 
+                        {/* Date */}
                         <div>
-                            <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
-                            <div className="mt-1">
-                                <input
-                                    id="date"
-                                    name="date"
-                                    type="date"
-                                    required
-                                    value={formData.date}
-                                    onChange={handleChange}
-                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200"
-                                />
-                            </div>
+                            <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Date</label>
+                            <input type="date" name="date" required value={formData.date} onChange={handleChange} className={inputClass} />
                         </div>
 
+                        {/* Start / End time */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">Start Time</label>
-                                <div className="mt-1">
-                                    <input
-                                        id="startTime"
-                                        name="startTime"
-                                        type="time"
-                                        required
-                                        value={formData.startTime}
-                                        onChange={handleChange}
-                                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200"
-                                    />
-                                </div>
+                                <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Start time</label>
+                                <input type="time" name="startTime" required value={formData.startTime} onChange={handleChange} className={inputClass} />
                             </div>
-
                             <div>
-                                <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">End Time</label>
-                                <div className="mt-1">
-                                    <input
-                                        id="endTime"
-                                        name="endTime"
-                                        type="time"
-                                        required
-                                        value={formData.endTime}
-                                        onChange={handleChange}
-                                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200"
-                                    />
-                                </div>
+                                <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">End time</label>
+                                <input type="time" name="endTime" required value={formData.endTime} onChange={handleChange} className={inputClass} />
                             </div>
                         </div>
 
+                        {/* Purpose */}
                         <div>
-                            <label htmlFor="purpose" className="block text-sm font-medium text-gray-700">Purpose</label>
-                            <div className="mt-1">
-                                <textarea
-                                    id="purpose"
-                                    name="purpose"
-                                    rows="3"
-                                    required
-                                    value={formData.purpose}
-                                    onChange={handleChange}
-                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200"
-                                    placeholder="Briefly describe the purpose of your booking..."
-                                />
-                            </div>
+                            <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Purpose</label>
+                            <textarea name="purpose" rows={3} required value={formData.purpose} onChange={handleChange}
+                                placeholder="Briefly describe your booking purpose..."
+                                className={inputClass + " resize-none"} />
                         </div>
 
+                        {/* Attendees */}
                         <div>
-                            <label htmlFor="expectedAttendees" className="block text-sm font-medium text-gray-700">Expected Attendees</label>
-                            <div className="mt-1">
-                                <input
-                                    id="expectedAttendees"
-                                    name="expectedAttendees"
-                                    type="number"
-                                    min="1"
-                                    required
-                                    value={formData.expectedAttendees}
-                                    onChange={handleChange}
-                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-200"
-                                />
-                            </div>
+                            <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Expected attendees</label>
+                            <input type="number" name="expectedAttendees" min="1" required
+                                value={formData.expectedAttendees} onChange={handleChange} className={inputClass} />
                         </div>
 
-                        <div className="flex gap-4 pt-4">
-                            <button
-                                type="button"
-                                onClick={() => navigate('/booking')}
-                                className="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200"
-                            >
+                        <hr className="border-gray-100" />
+
+                        {/* Actions */}
+                        <div className="flex gap-3 pt-1">
+                            <button type="button" onClick={() => navigate('/booking')}
+                                className="flex-1 py-2.5 px-4 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-150">
                                 Cancel
                             </button>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-                            >
-                                {loading ? 'Submitting...' : 'Submit Request'}
+                            <button type="submit" disabled={loading}
+                                className="flex-[2] py-2.5 px-4 text-sm font-medium text-white bg-[#1a1a2e] rounded-lg hover:bg-[#2a2a4e] disabled:opacity-50 transition-colors duration-150">
+                                {loading ? 'Submitting...' : 'Submit request →'}
                             </button>
                         </div>
                     </form>
