@@ -15,6 +15,7 @@ public class MongoConfig {
 
     @Bean
     public MongoClient mongoClient() {
+        // මේ ලින්ක් එක මගින් අපි අනිවාර්යයෙන්ම Atlas එකට සම්බන්ධ වෙනවා
         return MongoClients.create(mongoUri);
     }
 
