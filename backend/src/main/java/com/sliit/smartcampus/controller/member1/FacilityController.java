@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/facilities")
-@CrossOrigin(origins = "*")
+
 public class FacilityController {
 
     @Autowired
