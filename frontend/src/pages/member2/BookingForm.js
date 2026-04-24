@@ -46,7 +46,18 @@ export default function BookingForm() {
                 ...formData,
                 expectedAttendees: parseInt(formData.expectedAttendees, 10)
             });
-            navigate('/booking');
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                const role = (user.role || 'USER').toUpperCase();
+                if (role === 'ADMIN') {
+                    navigate('/admin-page/bookinglist');
+                } else {
+                    navigate('/booking');
+                }
+            } else {
+                navigate('/booking');
+            }
         } catch (err) {
             setError(err.response?.data?.error || err.response?.data?.message || "Failed to create booking");
         } finally {
@@ -141,7 +152,20 @@ export default function BookingForm() {
 
                         {/* Actions */}
                         <div className="flex gap-3 pt-1">
-                            <button type="button" onClick={() => navigate('/booking')}
+                            <button type="button" onClick={() => {
+                                const userStr = localStorage.getItem('user');
+                                if (userStr) {
+                                    const user = JSON.parse(userStr);
+                                    const role = (user.role || 'USER').toUpperCase();
+                                    if (role === 'ADMIN') {
+                                        navigate('/admin-page/bookinglist');
+                                    } else {
+                                        navigate('/booking');
+                                    }
+                                } else {
+                                    navigate('/booking');
+                                }
+                            }}
                                 className="flex-1 py-2.5 px-4 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-150">
                                 Cancel
                             </button>

@@ -151,7 +151,7 @@ export default function Login() {
     const handleModalClose = () => {
         setShowSuccessModal(false);
         setTimeout(() => {
-            if (redirectData?.role === 'ADMIN') {
+            if (redirectData?.role?.toUpperCase() === 'ADMIN') {
                 navigate('/admin-page');
             } else {
                 navigate('/student-page');
