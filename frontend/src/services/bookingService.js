@@ -1,40 +1,34 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/bookings';
+const BASE_URL = 'http://localhost:8000/api/v1/member2/bookings';
 
-const getUserId = () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    return user ? user.id : 'anonymous'; // Fallback if not logged in
+const getAuthHeader = () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user.token ? { Authorization: `Bearer ${user.token}` } : {};
 };
 
 const createBooking = (data) => {
-    return axios.post(API_URL, data, {
-        headers: { 'X-User-Id': getUserId() }
-    });
+    return axios.post(BASE_URL, data, { headers: getAuthHeader() });
 };
 
 const getMyBookings = () => {
-    return axios.get(`${API_URL}/my-bookings`, {
-        headers: { 'X-User-Id': getUserId() }
-    });
+    return axios.get(`${BASE_URL}/me`, { headers: getAuthHeader() });
 };
 
 const getAllBookings = () => {
-    return axios.get(API_URL, {
-        headers: { 'X-User-Id': getUserId() }
-    });
+    return axios.get(`${BASE_URL}/admin`, { headers: getAuthHeader() });
 };
 
 const reviewBooking = (id, data) => {
-    return axios.put(`${API_URL}/${id}/review`, data, {
-        headers: { 'X-User-Id': getUserId() }
-    });
+    // Map old { status, reason } to the backend's BookingDecisionRequestMember2
+    return axios.patch(`${BASE_URL}/${id}/decision`, {
+        decision: data.status,   // APPROVED or REJECTED
+        adminNote: data.reason,
+    }, { headers: getAuthHeader() });
 };
 
 const cancelBooking = (id) => {
-    return axios.put(`${API_URL}/${id}/cancel`, {}, {
-        headers: { 'X-User-Id': getUserId() }
-    });
+    return axios.patch(`${BASE_URL}/${id}/cancel`, {}, { headers: getAuthHeader() });
 };
 
 const bookingService = {

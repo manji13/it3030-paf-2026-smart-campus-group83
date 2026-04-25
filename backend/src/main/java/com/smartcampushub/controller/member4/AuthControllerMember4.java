@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -34,5 +37,32 @@ public class AuthControllerMember4 {
         String userId = securityUtils.currentUserId();
         UserProfileResponseMember4 profile = authServiceMember4.getProfile(userId);
         return ResponseEntity.ok(ApiResponse.ok("Current user profile fetched", profile));
+    }
+
+    // ── User Management (Admin only) ──────────────────────────────────────
+
+    @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<UserProfileResponseMember4>>> getAllUsers() {
+        List<UserProfileResponseMember4> users = authServiceMember4.getAllUsers();
+        return ResponseEntity.ok(ApiResponse.ok("Users fetched successfully", users));
+    }
+
+    @PatchMapping("/users/{userId}/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<UserProfileResponseMember4>> changeUserRole(
+            @PathVariable String userId,
+            @RequestBody Map<String, String> body
+    ) {
+        String newRole = body.get("role");
+        UserProfileResponseMember4 updated = authServiceMember4.changeUserRole(userId, newRole);
+        return ResponseEntity.ok(ApiResponse.ok("User role updated successfully", updated));
+    }
+
+    @DeleteMapping("/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable String userId) {
+        authServiceMember4.deleteUser(userId);
+        return ResponseEntity.ok(ApiResponse.ok("User deleted successfully", null));
     }
 }

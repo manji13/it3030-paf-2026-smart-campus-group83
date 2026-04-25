@@ -125,12 +125,27 @@ export default function Register() {
         setIsLoading(true);
         
         try {
-            await axios.post('http://localhost:8000/api/users/register', formData);
+            // The backend uses an upsert mock-login pattern:
+            // POSTing name + email creates the account if new, or logs in if existing.
+            const response = await axios.post('http://localhost:8000/api/v1/auth/google/mock', {
+                name: formData.name,
+                email: formData.email,
+            });
+            const authData = response.data?.data || response.data;
+            // Store user info so Login page and rest of app can read it
+            localStorage.setItem('user', JSON.stringify({
+                token: authData.token,
+                userId: authData.userId,
+                email: authData.email,
+                name: authData.name,
+                pictureUrl: authData.pictureUrl,
+                role: authData.roles ? [...authData.roles][0] : 'USER',
+            }));
             setIsLoading(false);
             setShowSuccessModal(true);
         } catch (error) {
             setIsLoading(false);
-            const errorMessage = error.response?.data?.message || "Error registering user";
+            const errorMessage = error.response?.data?.message || error.response?.data?.error || "Error registering user. Please try again.";
             alert(errorMessage);
         }
     };

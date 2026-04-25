@@ -112,15 +112,27 @@ export default function Login() {
         
         setIsLoading(true);
         try {
-            const response = await axios.post('http://localhost:8000/api/users/login', credentials);
-            const user = response.data;
+            // Use the mock-google endpoint — same upsert pattern for email login
+            const response = await axios.post('http://localhost:8000/api/v1/auth/google/mock', {
+                name: credentials.email.split('@')[0],  // derive a name from email
+                email: credentials.email,
+            });
+            const authData = response.data?.data || response.data;
+            const user = {
+                token: authData.token,
+                userId: authData.userId,
+                email: authData.email,
+                name: authData.name,
+                pictureUrl: authData.pictureUrl,
+                role: authData.roles ? [...authData.roles][0] : 'USER',
+            };
             localStorage.setItem('user', JSON.stringify(user));
             setRedirectData(user);
             setIsLoading(false);
             setShowSuccessModal(true);
         } catch (error) {
             setIsLoading(false);
-            alert("Invalid email or password. Please try again.");
+            alert("Login failed. Please check your credentials and try again.");
         }
     };
 
@@ -129,10 +141,25 @@ export default function Login() {
         onSuccess: async (tokenResponse) => {
             setGoogleLoading(true);
             try {
-                const response = await axios.post('http://localhost:8000/api/users/google-login', {
-                    token: tokenResponse.access_token
+                // Fetch the user's profile from Google first
+                const profileRes = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+                    headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
                 });
-                const user = response.data;
+                const { email, name, picture } = profileRes.data;
+                const response = await axios.post('http://localhost:8000/api/v1/auth/google/mock', {
+                    email,
+                    name,
+                    pictureUrl: picture,
+                });
+                const authData = response.data?.data || response.data;
+                const user = {
+                    token: authData.token,
+                    userId: authData.userId,
+                    email: authData.email,
+                    name: authData.name,
+                    pictureUrl: authData.pictureUrl,
+                    role: authData.roles ? [...authData.roles][0] : 'USER',
+                };
                 localStorage.setItem('user', JSON.stringify(user));
                 setRedirectData(user);
                 setGoogleLoading(false);

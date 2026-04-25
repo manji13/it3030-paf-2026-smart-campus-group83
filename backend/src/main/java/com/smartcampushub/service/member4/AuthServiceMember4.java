@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,14 +59,34 @@ public class AuthServiceMember4 {
         User user = userRepositoryMember4.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        return UserProfileResponseMember4.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .pictureUrl(user.getPictureUrl())
-                .roles(user.getRoles())
-                .build();
+        return toProfileResponse(user);
     }
+
+    // ── User Management ──────────────────────────────────────────────────
+
+    public List<UserProfileResponseMember4> getAllUsers() {
+        return userRepositoryMember4.findAll().stream()
+                .map(this::toProfileResponse)
+                .collect(Collectors.toList());
+    }
+
+    public UserProfileResponseMember4 changeUserRole(String userId, String newRole) {
+        User user = userRepositoryMember4.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        UserRole role = UserRole.valueOf(newRole.toUpperCase());
+        user.setRoles(Set.of(role));
+        User saved = userRepositoryMember4.save(user);
+        return toProfileResponse(saved);
+    }
+
+    public void deleteUser(String userId) {
+        if (!userRepositoryMember4.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        userRepositoryMember4.deleteById(userId);
+    }
+
+    // ── Private helpers ──────────────────────────────────────────────────
 
     private User createNewUserFromMockRequest(MockGoogleLoginRequestMember4 request) {
         UserRole defaultRole = defaultRoleForEmail(request.getEmail());
@@ -92,6 +114,16 @@ public class AuthServiceMember4 {
             return UserRole.TECHNICIAN;
         }
         return UserRole.USER;
+    }
+
+    private UserProfileResponseMember4 toProfileResponse(User user) {
+        return UserProfileResponseMember4.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .pictureUrl(user.getPictureUrl())
+                .roles(user.getRoles())
+                .build();
     }
 
     private AuthResponseMember4 toAuthResponse(User user, String token) {

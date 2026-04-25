@@ -21,9 +21,10 @@ export default function BookingForm() {
         const fetchFacilities = async () => {
             try {
                 const response = await facilityService.getFacilities();
-                setFacilities(response.data || []);
-                if (response.data?.length > 0) {
-                    setFormData(prev => ({ ...prev, resourceId: response.data[0].id }));
+                const facilitiesList = response.data?.data || response.data || [];
+                setFacilities(Array.isArray(facilitiesList) ? facilitiesList : []);
+                if (facilitiesList.length > 0) {
+                    setFormData(prev => ({ ...prev, resourceId: facilitiesList[0].id }));
                 }
             } catch (err) {
                 console.error("Failed to fetch facilities", err);

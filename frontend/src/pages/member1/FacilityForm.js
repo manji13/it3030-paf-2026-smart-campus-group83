@@ -17,6 +17,19 @@ function FacilityForm() {
     });
 
     useEffect(() => {
+        // Guard: only ADMIN can add/edit facilities
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.token) {
+            alert('Please log in to manage facilities.');
+            navigate('/login');
+            return;
+        }
+        const role = (user.role || '').toUpperCase();
+        if (role !== 'ADMIN') {
+            alert('Only administrators can add or edit facilities.');
+            navigate('/facilities');
+            return;
+        }
         if (isEditMode) {
             fetchFacility();
         }
@@ -57,7 +70,20 @@ function FacilityForm() {
             navigate('/facilities');
         } catch (error) {
             console.error('Error saving facility', error);
-            alert('Failed to save. Ensure backend is running.');
+            const status = error.response?.status;
+            if (status === 403) {
+                alert('Access denied. You must be logged in as an Admin to save facilities.\nPlease log in and try again.');
+                navigate('/login');
+                return;
+            }
+            // Show actual backend validation errors if available
+            const errData = error.response?.data;
+            if (errData?.data && typeof errData.data === 'object') {
+                const messages = Object.values(errData.data).join('\n');
+                alert('Validation errors:\n' + messages);
+            } else {
+                alert(errData?.message || 'Failed to save facility. Please check all required fields.');
+            }
         }
     };
 
@@ -110,8 +136,19 @@ function FacilityForm() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">Availability Windows (Comma separated)</label>
-                        <input type="text" name="availabilityWindows" value={formData.availabilityWindows} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-400" placeholder="e.g. Mon 9-5, Tue 10-4"/>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                            Availability Windows (Comma separated) <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                            required
+                            type="text"
+                            name="availabilityWindows"
+                            value={formData.availabilityWindows}
+                            onChange={handleChange}
+                            className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-400"
+                            placeholder="e.g. Mon 9-5, Tue 10-4  (at least one required)"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Enter time slots separated by commas</p>
                     </div>
 
                     <button type="submit" className="w-full py-4 bg-gradient-to-r from-teal-500 to-blue-600 rounded-lg shadow-lg hover:shadow-cyan-500/50 transform hover:-translate-y-1 transition-all duration-300 font-bold text-lg mt-4">

@@ -50,7 +50,6 @@ public class ResourceControllerMember1 {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER','ADMIN','TECHNICIAN')")
     public ResponseEntity<ApiResponse<List<ResourceResponseMember1>>> getResources(
             @RequestParam(required = false) String type,
             @RequestParam(required = false) Integer minCapacity,
@@ -62,7 +61,6 @@ public class ResourceControllerMember1 {
     }
 
     @GetMapping("/{resourceId}")
-    @PreAuthorize("hasAnyRole('USER','ADMIN','TECHNICIAN')")
     public ResponseEntity<ApiResponse<ResourceResponseMember1>> getResourceById(@PathVariable String resourceId) {
         ResourceResponseMember1 resource = resourceServiceMember1.getResourceById(resourceId);
         return ResponseEntity.ok(ApiResponse.ok("Resource fetched successfully", resource));

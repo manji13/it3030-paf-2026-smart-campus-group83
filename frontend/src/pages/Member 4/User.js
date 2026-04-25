@@ -18,11 +18,13 @@ export default function UserManagement() {
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('http://localhost:8000/api/users');
-            setUsers(res.data);
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const headers = storedUser.token ? { Authorization: `Bearer ${storedUser.token}` } : {};
+            const res = await axios.get('http://localhost:8000/api/v1/auth/users', { headers });
+            setUsers(res.data?.data || []);
         } catch (error) {
-            console.error("Error fetching users");
-            showToastMessage('Error fetching users', 'error');
+            console.error("Error fetching users", error);
+            showToastMessage('Error fetching users. Make sure you are logged in as Admin.', 'error');
         } finally {
             setLoading(false);
         }
@@ -50,11 +52,13 @@ export default function UserManagement() {
 
     const handleRoleChange = async (id, newRole) => {
         try {
-            await axios.put(`http://localhost:8000/api/users/${id}/role`, { role: newRole });
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const headers = storedUser.token ? { Authorization: `Bearer ${storedUser.token}` } : {};
+            await axios.patch(`http://localhost:8000/api/v1/auth/users/${id}/role`, { role: newRole }, { headers });
             await fetchUsers();
             showToastMessage(`Role changed to ${newRole} successfully!`, 'success');
         } catch (error) {
-            console.error("Error updating role");
+            console.error("Error updating role", error);
             showToastMessage('Error updating role', 'error');
         }
     };
@@ -67,13 +71,15 @@ export default function UserManagement() {
     const confirmDelete = async () => {
         if (selectedUser) {
             try {
-                await axios.delete(`http://localhost:8000/api/users/${selectedUser.id}`);
+                const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+                const headers = storedUser.token ? { Authorization: `Bearer ${storedUser.token}` } : {};
+                await axios.delete(`http://localhost:8000/api/v1/auth/users/${selectedUser.id}`, { headers });
                 await fetchUsers();
                 showToastMessage(`User ${selectedUser.name} deleted successfully!`, 'success');
                 setShowDeleteModal(false);
                 setSelectedUser(null);
             } catch (error) {
-                console.error("Error deleting user");
+                console.error("Error deleting user", error);
                 showToastMessage('Error deleting user', 'error');
             }
         }

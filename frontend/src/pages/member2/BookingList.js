@@ -45,7 +45,7 @@ export default function BookingList() {
             } else {
                 response = await bookingService.getMyBookings();
             }
-            setBookings(response.data || []);
+            setBookings(response.data?.data || []);
         } catch (error) {
             console.error("Error fetching bookings", error);
         } finally {

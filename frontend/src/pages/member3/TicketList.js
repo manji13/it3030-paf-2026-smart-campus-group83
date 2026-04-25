@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import AdminNav from '../../components/AdminNav'; // Adjust path if necessary
 
-const API_BASE_URL = 'http://localhost:8000/api/tickets';
-const BACKEND_BASE = 'http://localhost:8000';  // your backend origin
+const API_BASE_URL = 'http://localhost:8000/api/v1/member3/tickets';
+const BACKEND_BASE = 'http://localhost:8000';
 
 const TicketList = ({ refreshTrigger }) => {
   const [tickets, setTickets] = useState([]);
@@ -14,8 +14,9 @@ const TicketList = ({ refreshTrigger }) => {
       setLoading(true);
       const response = await fetch(API_BASE_URL);
       if (!response.ok) throw new Error('Failed to fetch');
-      const data = await response.json();
-      setTickets(data);
+      const json = await response.json();
+      // Backend wraps response: { success, message, data: [...] }
+      setTickets(Array.isArray(json) ? json : (json.data || []));
       setError('');
     } catch (err) {
       console.error(err);

@@ -1,25 +1,30 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/facilities';
+const API_URL = 'http://localhost:8000/api/v1/member1/resources';
+
+const getAuthHeader = () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user.token ? { Authorization: `Bearer ${user.token}` } : {};
+};
 
 const getFacilities = (params) => {
-    return axios.get(API_URL, { params });
+    return axios.get(API_URL, { params, headers: getAuthHeader() });
 };
 
 const getFacilityById = (id) => {
-    return axios.get(`${API_URL}/${id}`);
+    return axios.get(`${API_URL}/${id}`, { headers: getAuthHeader() });
 };
 
 const createFacility = (data) => {
-    return axios.post(API_URL, data);
+    return axios.post(API_URL, data, { headers: getAuthHeader() });
 };
 
 const updateFacility = (id, data) => {
-    return axios.put(`${API_URL}/${id}`, data);
+    return axios.put(`${API_URL}/${id}`, data, { headers: getAuthHeader() });
 };
 
 const deleteFacility = (id) => {
-    return axios.delete(`${API_URL}/${id}`);
+    return axios.delete(`${API_URL}/${id}`, { headers: getAuthHeader() });
 };
 
 const facilityService = {

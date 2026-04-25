@@ -18,7 +18,7 @@ function FacilityCatalogue() {
                 if (filters[key]) params[key] = filters[key];
             });
             const response = await facilityService.getFacilities(params);
-            setFacilities(response.data);
+            setFacilities(response.data?.data || []);
         } catch (error) {
             console.error('Error fetching facilities', error);
         }

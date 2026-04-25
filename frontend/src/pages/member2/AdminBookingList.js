@@ -36,7 +36,7 @@ export default function AdminBookingList() {
         try {
             setLoading(true);
             const res = await bookingService.getAllBookings();
-            setBookings(res.data || []);
+            setBookings(res.data?.data || []);
         } catch (err) {
             console.error('Error fetching bookings', err);
         } finally {

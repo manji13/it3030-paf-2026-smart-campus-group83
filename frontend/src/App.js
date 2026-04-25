@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Shared Components
@@ -30,34 +30,32 @@ const GOOGLE_CLIENT_ID = '1092425987615-n1n08cqpr6eos82binob7var1q8nsqrr.apps.go
 function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <Router>
-        <Routes>
-          {/* Main Route */}
-          <Route path="/" element={<Home />} />
+      <Routes>
+        {/* Main Route */}
+        <Route path="/" element={<Home />} />
 
-          {/* Member 4 Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/users" element={<UserManagement />} />
-          <Route path="/admin-page" element={<AdminDashboard />} />
-          <Route path="/student-page" element={<StudentDashboard />} />
-          <Route path="/notifications" element={<Notifications />} />
+        {/* Member 4 Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/users" element={<UserManagement />} />
+        <Route path="/admin-page" element={<AdminDashboard />} />
+        <Route path="/student-page" element={<StudentDashboard />} />
+        <Route path="/notifications" element={<Notifications />} />
 
-          {/* Member 1 Routes */}
-          <Route path="/facilities" element={<FacilityCatalogue />} />
-          <Route path="/facilities/new" element={<FacilityForm />} />
-          <Route path="/facilities/edit/:id" element={<FacilityForm />} />
+        {/* Member 1 Routes */}
+        <Route path="/facilities" element={<FacilityCatalogue />} />
+        <Route path="/facilities/new" element={<FacilityForm />} />
+        <Route path="/facilities/edit/:id" element={<FacilityForm />} />
 
-          {/* Member 2 Routes */}
-          <Route path="/booking" element={<BookingList />} />
-          <Route path="/booking/new" element={<BookingForm />} />
-          <Route path="/admin-page/bookings" element={<AdminBookingList />} />
+        {/* Member 2 Routes */}
+        <Route path="/booking" element={<BookingList />} />
+        <Route path="/booking/new" element={<BookingForm />} />
+        <Route path="/admin-page/bookings" element={<AdminBookingList />} />
 
-          {/* Member 3 Routes */}
-          <Route path="/ticketList" element={<TicketList />} />
-          <Route path="/ticketForm" element={<TicketForm />} />
-        </Routes>
-      </Router>
+        {/* Member 3 Routes */}
+        <Route path="/ticketList" element={<TicketList />} />
+        <Route path="/ticketForm" element={<TicketForm />} />
+      </Routes>
     </GoogleOAuthProvider>
   );
 }
