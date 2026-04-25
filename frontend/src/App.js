@@ -3,12 +3,8 @@ import { Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Shared Components
-import Navbar from './components/Navbar';
 import Home from './pages/Home';
-import TicketForm from './pages/member3/TicketForm';
-import TicketList from './pages/member3/TicketList';
 import ProtectedRoute from './routes/ProtectedRoute';
-
 
 // Member 4 Pages
 import Login from './pages/Member 4/Login';
@@ -27,7 +23,8 @@ import FacilityForm from './pages/member1/FacilityForm';
 import BookingList from './pages/member2/BookingList';
 import BookingForm from './pages/member2/BookingForm';
 import AdminBookingList from './pages/member2/AdminBookingList';
-//member3
+
+// Member 3 Pages
 import MyTickets from './pages/member3/MyTicket';
 import TicketForm from './pages/member3/TicketForm';
 import TicketList from './pages/member3/TicketList';
@@ -50,6 +47,7 @@ function App() {
         <Route path="/admin-page" element={<AdminDashboard />} />
         <Route path="/student-page" element={<StudentDashboard />} />
         <Route path="/notifications" element={<Notifications />} />
+        <Route path="/user-notifications" element={<UserNotifications />} />
 
         {/* Member 1 Routes */}
         <Route path="/facilities" element={<FacilityCatalogue />} />
@@ -66,34 +64,10 @@ function App() {
         {/* Member 3 Routes */}
         <Route path="/ticketList" element={<TicketList />} />
         <Route path="/ticketForm" element={<TicketForm />} />
+        <Route path="/my-tickets" element={<MyTickets />} />
+        <Route path="/technician-tickets" element={<TechnicianTickets />} />
+        <Route path="/technician-notifications" element={<TechnicianNotifications />} />
       </Routes>
-      <Router>
-        <Routes>
-          {/* Main Route */}
-          <Route path="/" element={<Home />} />
-          
-          {/* Member 4 Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/users" element={<UserManagement />} />
-          <Route path="/admin-page" element={<AdminDashboard />} />
-          <Route path="/student-page" element={<StudentDashboard />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/user-notifications" element={<UserNotifications />} />
-          
-          {/* Member 1 Routes */}
-          <Route path="/facilities" element={<FacilityCatalogue />} />
-          <Route path="/facilities/new" element={<FacilityForm />} />
-          <Route path="/facilities/edit/:id" element={<FacilityForm />} />
-          
-          {/* Member 3 Routes */}
-          <Route path="/ticketList" element={<TicketList />} />
-          <Route path="/ticketForm" element={<TicketForm />} />
-          <Route path="/my-tickets" element={<MyTickets />} />
-          <Route path="/technician-tickets" element={<TechnicianTickets />} />
-          <Route path="/technician-notifications" element={<TechnicianNotifications />} />
-        </Routes>
-      </Router>
     </GoogleOAuthProvider>
   );
 }
