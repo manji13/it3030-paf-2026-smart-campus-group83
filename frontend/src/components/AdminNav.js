@@ -133,15 +133,14 @@ export default function AdminNav({ userName, userEmail, onLogout }) {
 
                     {/* Right Side - Notifications, Theme Toggle & User Menu */}
                     <div className="flex items-center gap-2 sm:gap-4">
-                        
+
                         {/* Notification Icon Button */}
                         <button
                             onClick={() => navigate('/notifications')}
-                            className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
-                                isDarkMode
+                            className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${isDarkMode
                                     ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
-                            }`}
+                                }`}
                             aria-label="Notifications"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,11 +151,10 @@ export default function AdminNav({ userName, userEmail, onLogout }) {
                         {/* Theme Toggle Button */}
                         <button
                             onClick={toggleTheme}
-                            className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
-                                isDarkMode
+                            className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${isDarkMode
                                     ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
+                                }`}
                         >
                             {isDarkMode ? (
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
