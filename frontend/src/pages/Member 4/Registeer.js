@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuthContext } from '../../context/AuthContext';
 
 export default function Register() {
     const [formData, setFormData] = useState({ name: '', email: '', password: '' });
@@ -11,6 +12,7 @@ export default function Register() {
     const [pageLoaded, setPageLoaded] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const navigate = useNavigate();
+    const { loginWithMockGoogle } = useAuthContext();
 
     // Page entrance animation
     useEffect(() => {
@@ -125,28 +127,16 @@ export default function Register() {
         setIsLoading(true);
         
         try {
-            // The backend uses an upsert mock-login pattern:
-            // POSTing name + email creates the account if new, or logs in if existing.
-            const response = await axios.post('http://localhost:8000/api/v1/auth/google/mock', {
+            await loginWithMockGoogle({
                 name: formData.name,
                 email: formData.email,
             });
-            const authData = response.data?.data || response.data;
-            // Store user info so Login page and rest of app can read it
-            localStorage.setItem('user', JSON.stringify({
-                token: authData.token,
-                userId: authData.userId,
-                email: authData.email,
-                name: authData.name,
-                pictureUrl: authData.pictureUrl,
-                role: authData.roles ? [...authData.roles][0] : 'USER',
-            }));
             setIsLoading(false);
             setShowSuccessModal(true);
         } catch (error) {
             setIsLoading(false);
-            const errorMessage = error.response?.data?.message || error.response?.data?.error || "Error registering user. Please try again.";
-            alert(errorMessage);
+            const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Error registering user. Please try again.";
+            alert(`Register Error: ${errorMessage}`);
         }
     };
 

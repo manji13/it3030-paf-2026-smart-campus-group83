@@ -52,7 +52,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/booking" element={<BookingList />} />
           <Route path="/booking/new" element={<BookingForm />} />
-          <Route path="/admin-page/bookings" element={<AdminBookingList />} />
+          <Route path="/bookings" element={<AdminBookingList />} />
         </Route>
 
         {/* Member 3 Routes */}

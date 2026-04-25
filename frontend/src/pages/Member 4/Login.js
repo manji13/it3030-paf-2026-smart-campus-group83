@@ -15,7 +15,7 @@ export default function Login() {
     const [pageLoaded, setPageLoaded] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const navigate = useNavigate();
-    const { saveSession } = useAuthContext();
+    const { loginWithMockGoogle } = useAuthContext();
 
     // Page entrance animation
     useEffect(() => {
@@ -114,26 +114,16 @@ export default function Login() {
         
         setIsLoading(true);
         try {
-            // Use the mock-google endpoint — same upsert pattern for email login
-            const response = await axios.post('http://localhost:8000/api/v1/auth/google/mock', {
-                name: credentials.email.split('@')[0],  // derive a name from email
+            await loginWithMockGoogle({
+                name: credentials.email.split('@')[0],
                 email: credentials.email,
             });
-            const authData = response.data?.data || response.data;
-            const user = {
-                id: authData.userId,
-                email: authData.email,
-                name: authData.name,
-                pictureUrl: authData.pictureUrl,
-                roles: authData.roles && Array.isArray(authData.roles) ? authData.roles : ['USER']
-            };
-            // Use AuthContext to save session
-            saveSession(authData.token, user);
             setIsLoading(false);
             setShowSuccessModal(true);
         } catch (error) {
             setIsLoading(false);
-            alert("Login failed. Please check your credentials and try again.");
+            const msg = error?.response?.data?.message || error.message || 'Login failed. Please check your credentials and try again.';
+            alert(`Login Error: ${msg}`);
         }
     };
 

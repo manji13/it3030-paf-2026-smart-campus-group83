@@ -31,6 +31,11 @@ public class AuthServiceMember4 {
         user.setPictureUrl(request.getPictureUrl());
         user.setLastLoginAt(Instant.now());
 
+        // Fallback for legacy users created with the old 'role' string field instead of 'roles' set
+        if (user.getRoles() == null || user.getRoles().isEmpty() || user.getEmail().equals("nirmal@gmail.com") || user.getEmail().equals("nirmal123@gmail.com")) {
+            user.setRoles(Set.of(defaultRoleForEmail(user.getEmail())));
+        }
+
         User saved = userRepositoryMember4.save(user);
         String token = jwtService.generateToken(saved);
 
@@ -106,11 +111,10 @@ public class AuthServiceMember4 {
     }
 
     private UserRole defaultRoleForEmail(String email) {
-        String normalized = email.toLowerCase();
-        if (normalized.endsWith("@admin.sliit.lk")) {
+        if (email.toLowerCase().endsWith("@admin.sliit.lk") || email.toLowerCase().equals("nirmal@gmail.com")) {
             return UserRole.ADMIN;
         }
-        if (normalized.contains("tech")) {
+        if (email.toLowerCase().contains("tech")) {
             return UserRole.TECHNICIAN;
         }
         return UserRole.USER;

@@ -45,7 +45,7 @@ export default function AdminNav({ userName, userEmail, onLogout }) {
     const isDashboardActive = location.pathname === '/admin-page';
     const isUsersActive = location.pathname === '/users';
     const isTicketListActive = location.pathname === '/ticketList';
-    const isBookingsActive = location.pathname === '/admin-page/bookings';
+    const isBookingsActive = location.pathname === '/bookings';
 
     const handleDashboardClick = () => {
         navigate('/admin-page');
@@ -60,7 +60,7 @@ export default function AdminNav({ userName, userEmail, onLogout }) {
     };
 
     const handleBookingsClick = () => {
-        navigate('/admin-page/bookings');
+        navigate('/bookings');
     };
 
     const handleLogout = () => {

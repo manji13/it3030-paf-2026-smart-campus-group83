@@ -6,7 +6,7 @@ import { NotificationProvider } from './context/NotificationContext';
 
 export function MainApp() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_relativeSplatPath: true }}>
       <AuthProvider>
         <NotificationProvider>
           <App />
