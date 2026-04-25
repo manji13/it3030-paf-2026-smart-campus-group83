@@ -168,10 +168,11 @@ export default function Login() {
     const handleModalClose = () => {
         setShowSuccessModal(false);
         setTimeout(() => {
-            navigate('/student-page');
-            if (redirectData?.role === 'ADMIN') {
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const roles = storedUser.roles || [];
+            if (roles.includes('ADMIN')) {
                 navigate('/admin-page');
-            } else if (redirectData?.role === 'TECHNICIAN') {
+            } else if (roles.includes('TECHNICIAN')) {
                 navigate('/technician-tickets');
             } else {
                 navigate('/student-page');
