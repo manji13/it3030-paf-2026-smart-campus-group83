@@ -15,7 +15,7 @@ export default function Login() {
     const [pageLoaded, setPageLoaded] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const navigate = useNavigate();
-    const { loginWithMockGoogle } = useAuthContext();
+    const { loginWithMockGoogle, user } = useAuthContext();
 
     // Page entrance animation
     useEffect(() => {
@@ -168,10 +168,10 @@ export default function Login() {
     const handleModalClose = () => {
         setShowSuccessModal(false);
         setTimeout(() => {
-            navigate('/student-page');
-            if (redirectData?.role === 'ADMIN') {
+            const roles = user?.roles || [];
+            if (roles.includes('ADMIN')) {
                 navigate('/admin-page');
-            } else if (redirectData?.role === 'TECHNICIAN') {
+            } else if (roles.includes('TECHNICIAN')) {
                 navigate('/technician-tickets');
             } else {
                 navigate('/student-page');

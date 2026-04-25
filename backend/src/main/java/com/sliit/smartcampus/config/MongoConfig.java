@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
-@Configuration
+// @Configuration - Disabled, covered by main app MongoConfig
 public class MongoConfig {
 
     @Value("${spring.data.mongodb.uri}")
