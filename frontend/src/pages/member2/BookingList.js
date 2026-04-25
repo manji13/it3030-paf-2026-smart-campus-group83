@@ -4,6 +4,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import bookingService from '../../services/bookingService';
 import facilityService from '../../services/facilityService';
 import AdminNav from '../../components/AdminNav';
+import UserNav from '../../components/UserNav';
 
 export default function BookingList() {
     const [bookings, setBookings] = useState([]);
@@ -122,12 +123,14 @@ export default function BookingList() {
             {/* Google Font */}
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-            {userRole === 'ADMIN' && (
+            {userRole === 'ADMIN' ? (
                 <AdminNav 
                     userName={userName} 
                     userEmail={userEmail} 
                     onLogout={handleLogout} 
                 />
+            ) : (
+                <UserNav onLogout={handleLogout} />
             )}
 
             <div className="relative z-10 transition-all duration-500 opacity-100">
