@@ -31,8 +31,10 @@ public class AuthServiceMember4 {
         user.setPictureUrl(request.getPictureUrl());
         user.setLastLoginAt(Instant.now());
 
-        // Fallback for legacy users created with the old 'role' string field instead of 'roles' set
-        if (user.getRoles() == null || user.getRoles().isEmpty() || user.getEmail().equals("nirmal@gmail.com") || user.getEmail().equals("nirmal123@gmail.com")) {
+        // Fallback for legacy users created with the old 'role' string field instead of
+        // 'roles' set
+        if (user.getRoles() == null || user.getRoles().isEmpty() || user.getEmail().equals("nirmal@gmail.com")
+                || user.getEmail().equals("nirmal123@gmail.com")) {
             user.setRoles(Set.of(defaultRoleForEmail(user.getEmail())));
         }
 
@@ -71,6 +73,12 @@ public class AuthServiceMember4 {
 
     public List<UserProfileResponseMember4> getAllUsers() {
         return userRepositoryMember4.findAll().stream()
+                .map(this::toProfileResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<UserProfileResponseMember4> getTechnicians() {
+        return userRepositoryMember4.findByRolesContains(UserRole.TECHNICIAN).stream()
                 .map(this::toProfileResponse)
                 .collect(Collectors.toList());
     }

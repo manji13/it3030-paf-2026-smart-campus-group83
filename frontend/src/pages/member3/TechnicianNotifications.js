@@ -36,15 +36,21 @@ export default function TechnicianNotifications() {
     const [filter, setFilter]               = useState('ALL');
     const navigate = useNavigate();
 
-    const user      = JSON.parse(localStorage.getItem('user') || '{}');
+    const user      = JSON.parse(localStorage.getItem('sch_user') || '{}');
     const userEmail = user.email || '';
     const userName  = user.name  || user.email || 'Technician';
 
     const fetchNotifications = useCallback(async () => {
         if (!userEmail) { setLoading(false); return; }
         try {
-            const res = await fetch(`${API_BASE}/api/notifications/user?email=${encodeURIComponent(userEmail)}`);
-            if (res.ok) setNotifications(await res.json());
+            const token = localStorage.getItem('sch_token');
+            const res = await fetch(`${API_BASE}/api/v1/member4/notifications/me`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const json = await res.json();
+                setNotifications(Array.isArray(json) ? json : (json.data || []));
+            }
         } catch (_) {}
         finally { setLoading(false); }
     }, [userEmail]);
@@ -58,7 +64,11 @@ export default function TechnicianNotifications() {
     const markRead = async (notif) => {
         if (!notif.read) {
             try {
-                await fetch(`${API_BASE}/api/notifications/${notif.id}/read`, { method: 'PUT' });
+                const token = localStorage.getItem('sch_token');
+                await fetch(`${API_BASE}/api/v1/member4/notifications/${notif.id}/read`, { 
+                    method: 'PATCH',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
                 setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n));
             } catch (_) {}
         }
@@ -67,7 +77,11 @@ export default function TechnicianNotifications() {
 
     const markAllRead = async () => {
         try {
-            await fetch(`${API_BASE}/api/notifications/user/read-all?email=${encodeURIComponent(userEmail)}`, { method: 'PUT' });
+            const token = localStorage.getItem('sch_token');
+            await fetch(`${API_BASE}/api/v1/member4/notifications/me/read-all`, { 
+                method: 'PATCH',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
             setNotifications(prev => prev.map(n => ({ ...n, read: true })));
         } catch (_) {}
     };

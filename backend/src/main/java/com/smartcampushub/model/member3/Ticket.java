@@ -32,6 +32,7 @@ public class Ticket {
     private TicketStatus status;
     private String assignedTechnicianId;
     private String resolutionNotes;
+    private String rejectionReason;
     private String createdBy;
     @Builder.Default
     private List<TicketComment> comments = new ArrayList<>();

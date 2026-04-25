@@ -17,11 +17,16 @@ public class NotificationServiceMember4 {
     private final NotificationRepositoryMember4 notificationRepositoryMember4;
 
     public void createNotification(String recipientUserId, String title, String message, NotificationType type) {
+        createNotification(recipientUserId, title, message, type, null);
+    }
+
+    public void createNotification(String recipientUserId, String title, String message, NotificationType type, String targetPath) {
         Notification notification = Notification.builder()
                 .recipientUserId(recipientUserId)
                 .title(title)
                 .message(message)
                 .type(type)
+                .targetPath(targetPath)
                 .build();
         notificationRepositoryMember4.save(notification);
     }
@@ -58,6 +63,7 @@ public class NotificationServiceMember4 {
                 .title(notification.getTitle())
                 .message(notification.getMessage())
                 .type(notification.getType())
+                .targetPath(notification.getTargetPath())
                 .isRead(notification.isRead())
                 .createdAt(notification.getCreatedAt())
                 .build();

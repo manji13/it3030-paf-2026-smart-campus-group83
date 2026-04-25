@@ -25,8 +25,7 @@ public class AuthControllerMember4 {
 
     @PostMapping("/google/mock")
     public ResponseEntity<ApiResponse<AuthResponseMember4>> mockGoogleSignIn(
-            @Valid @RequestBody MockGoogleLoginRequestMember4 request
-    ) {
+            @Valid @RequestBody MockGoogleLoginRequestMember4 request) {
         AuthResponseMember4 auth = authServiceMember4.mockGoogleLogin(request);
         return ResponseEntity.ok(ApiResponse.ok("Mock Google sign-in successful", auth));
     }
@@ -52,8 +51,7 @@ public class AuthControllerMember4 {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<UserProfileResponseMember4>> changeUserRole(
             @PathVariable String userId,
-            @RequestBody Map<String, String> body
-    ) {
+            @RequestBody Map<String, String> body) {
         String newRole = body.get("role");
         UserProfileResponseMember4 updated = authServiceMember4.changeUserRole(userId, newRole);
         return ResponseEntity.ok(ApiResponse.ok("User role updated successfully", updated));
@@ -64,5 +62,12 @@ public class AuthControllerMember4 {
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable String userId) {
         authServiceMember4.deleteUser(userId);
         return ResponseEntity.ok(ApiResponse.ok("User deleted successfully", null));
+    }
+
+    @GetMapping("/users/technicians")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<UserProfileResponseMember4>>> getTechnicians() {
+        List<UserProfileResponseMember4> techs = authServiceMember4.getTechnicians();
+        return ResponseEntity.ok(ApiResponse.ok("Technicians fetched successfully", techs));
     }
 }

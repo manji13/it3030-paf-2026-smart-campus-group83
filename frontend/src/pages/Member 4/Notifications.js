@@ -9,10 +9,13 @@ export default function Notifications() {
 
     const fetchNotifications = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/notifications');
+            const token = localStorage.getItem('sch_token');
+            const response = await fetch('http://localhost:8000/api/v1/member4/notifications/me', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
             if (response.ok) {
                 const data = await response.json();
-                setNotifications(data);
+                setNotifications(Array.isArray(data) ? data : (data.data || []));
             }
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -31,8 +34,10 @@ export default function Notifications() {
         // Mark as read in the backend
         if (!notification.read) {
             try {
-                await fetch(`http://localhost:8000/api/notifications/${notification.id}/read`, {
-                    method: 'PUT'
+                const token = localStorage.getItem('sch_token');
+                await fetch(`http://localhost:8000/api/v1/member4/notifications/${notification.id}/read`, {
+                    method: 'PATCH',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
                 setNotifications(prev =>
                     prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
@@ -49,7 +54,11 @@ export default function Notifications() {
 
     const handleMarkAllAsRead = async () => {
         try {
-            await fetch('http://localhost:8000/api/notifications/read-all', { method: 'PUT' });
+            const token = localStorage.getItem('sch_token');
+            await fetch('http://localhost:8000/api/v1/member4/notifications/me/read-all', { 
+                method: 'PATCH',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
             fetchNotifications();
         } catch (error) {
             console.error('Error marking all as read:', error);

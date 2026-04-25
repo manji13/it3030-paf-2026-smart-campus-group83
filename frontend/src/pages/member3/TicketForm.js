@@ -3,12 +3,12 @@ import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
 import UserNav from '../../components/UserNav';
 
-const API_BASE_URL = 'http://localhost:8000/api/tickets';
+const API_BASE_URL = 'http://localhost:8000/api/v1/member3/tickets';
 
 const FIELD_ICON = {
-  resource:       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 5h1" />,
-  location:       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />,
-  category:       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />,
+  resource: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 5h1" />,
+  location: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />,
+  category: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />,
   contactDetails: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />,
 };
 
@@ -29,11 +29,11 @@ const TicketForm = () => {
     resource: '', location: '', category: '',
     description: '', priority: 'MEDIUM', contactDetails: userEmail,
   });
-  const [images,   setImages]   = useState([]);
+  const [images, setImages] = useState([]);
   const [previews, setPreviews] = useState([]);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState('');
-  const [success,  setSuccess]  = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const onDrop = useCallback((accepted) => {
     const merged = [...images, ...accepted].slice(0, 3);
@@ -56,16 +56,29 @@ const TicketForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(''); setSuccess(''); setLoading(true);
-    const payload = { ...formData, userEmail };
-    const fd = new FormData();
-    fd.append('ticket', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
-    images.forEach(img => fd.append('images', img));
+    const payload = {
+        resourceId: formData.resource,
+        location: formData.location,
+        category: formData.category,
+        description: formData.description,
+        priority: formData.priority,
+        preferredContact: formData.contactDetails,
+        attachments: []
+    };
     try {
-      const res = await fetch(API_BASE_URL, { method: 'POST', body: fd });
+      const token = localStorage.getItem('sch_token');
+      const res = await fetch(API_BASE_URL, { 
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(payload)
+      });
       if (!res.ok) throw new Error('Failed to create ticket');
       await res.json();
       setSuccess('Ticket submitted! Redirecting…');
-      setFormData({ resource:'', location:'', category:'', description:'', priority:'MEDIUM', contactDetails: userEmail });
+      setFormData({ resource: '', location: '', category: '', description: '', priority: 'MEDIUM', contactDetails: userEmail });
       setImages([]); setPreviews([]);
       setTimeout(() => navigate('/my-tickets'), 1800);
     } catch (err) {
@@ -123,10 +136,10 @@ const TicketForm = () => {
 
             {/* Text fields */}
             {[
-              { name:'resource',       placeholder:'Resource *',       label:'Resource' },
-              { name:'location',       placeholder:'Location *',        label:'Location' },
-              { name:'category',       placeholder:'Category *',        label:'Category' },
-              { name:'contactDetails', placeholder:'Contact Email / Phone *', label:'Contact' },
+              { name: 'resource', placeholder: 'Resource *', label: 'Resource' },
+              { name: 'location', placeholder: 'Location *', label: 'Location' },
+              { name: 'category', placeholder: 'Category *', label: 'Category' },
+              { name: 'contactDetails', placeholder: 'Contact Email / Phone *', label: 'Contact' },
             ].map(f => (
               <div key={f.name}>
                 <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1.5">{f.label}</label>
@@ -152,15 +165,14 @@ const TicketForm = () => {
             <div>
               <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1.5">Priority</label>
               <div className="flex gap-2">
-                {[['HIGH','🔴','red'],['MEDIUM','🟡','amber'],['LOW','🟢','emerald']].map(([val, emoji, color]) => (
-                  <button key={val} type="button" onClick={() => setFormData(p => ({...p, priority: val}))}
-                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all ${
-                      formData.priority === val
-                        ? color === 'red'     ? 'bg-red-500 border-red-500 text-white shadow-md shadow-red-200'
-                        : color === 'amber'   ? 'bg-amber-500 border-amber-500 text-white shadow-md shadow-amber-200'
-                        :                       'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-200'
-                        : 'bg-transparent border-gray-200 dark:border-gray-600 text-gray-500 hover:border-gray-300'
-                    }`}>
+                {[['HIGH', '🔴', 'red'], ['MEDIUM', '🟡', 'amber'], ['LOW', '🟢', 'emerald']].map(([val, emoji, color]) => (
+                  <button key={val} type="button" onClick={() => setFormData(p => ({ ...p, priority: val }))}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold border-2 transition-all ${formData.priority === val
+                      ? color === 'red' ? 'bg-red-500 border-red-500 text-white shadow-md shadow-red-200'
+                        : color === 'amber' ? 'bg-amber-500 border-amber-500 text-white shadow-md shadow-amber-200'
+                          : 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-200'
+                      : 'bg-transparent border-gray-200 dark:border-gray-600 text-gray-500 hover:border-gray-300'
+                      }`}>
                     {emoji} {val}
                   </button>
                 ))}
@@ -173,11 +185,10 @@ const TicketForm = () => {
                 Attachments <span className="text-gray-400 font-normal normal-case">(up to 3 images)</span>
               </label>
               <div {...getRootProps()}
-                className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 ${
-                  isDragActive
-                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 scale-[1.01]'
-                    : 'border-indigo-200 dark:border-indigo-800/50 bg-indigo-50/30 dark:bg-gray-800/30 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 hover:border-indigo-400'
-                }`}>
+                className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 ${isDragActive
+                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 scale-[1.01]'
+                  : 'border-indigo-200 dark:border-indigo-800/50 bg-indigo-50/30 dark:bg-gray-800/30 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 hover:border-indigo-400'
+                  }`}>
                 <input {...getInputProps()} />
                 <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
                   <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

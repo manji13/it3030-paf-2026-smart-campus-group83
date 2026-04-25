@@ -5,17 +5,17 @@ import UserNav from '../../components/UserNav';
 const BASE_URL = 'http://localhost:8000';
 
 const STATUS_STYLES = {
-  OPEN:        { pill:'bg-blue-500/15 text-blue-600 border-blue-200',         dot:'bg-blue-500',    label:'Open' },
-  IN_PROGRESS: { pill:'bg-amber-500/15 text-amber-600 border-amber-200',      dot:'bg-amber-500',   label:'In Progress' },
-  RESOLVED:    { pill:'bg-emerald-500/15 text-emerald-600 border-emerald-200', dot:'bg-emerald-500', label:'Resolved' },
-  CLOSED:      { pill:'bg-gray-200 text-gray-500 border-gray-200',            dot:'bg-gray-400',    label:'Closed' },
-  REJECTED:    { pill:'bg-red-500/15 text-red-600 border-red-200',            dot:'bg-red-500',     label:'Rejected' },
+  OPEN: { pill: 'bg-blue-500/15 text-blue-600 border-blue-200', dot: 'bg-blue-500', label: 'Open' },
+  IN_PROGRESS: { pill: 'bg-amber-500/15 text-amber-600 border-amber-200', dot: 'bg-amber-500', label: 'In Progress' },
+  RESOLVED: { pill: 'bg-emerald-500/15 text-emerald-600 border-emerald-200', dot: 'bg-emerald-500', label: 'Resolved' },
+  CLOSED: { pill: 'bg-gray-200 text-gray-500 border-gray-200', dot: 'bg-gray-400', label: 'Closed' },
+  REJECTED: { pill: 'bg-red-500/15 text-red-600 border-red-200', dot: 'bg-red-500', label: 'Rejected' },
 };
 
 const PRIORITY_STYLES = {
-  HIGH:   'bg-red-50 text-red-600 border-red-200',
+  HIGH: 'bg-red-50 text-red-600 border-red-200',
   MEDIUM: 'bg-amber-50 text-amber-600 border-amber-200',
-  LOW:    'bg-emerald-50 text-emerald-600 border-emerald-200',
+  LOW: 'bg-emerald-50 text-emerald-600 border-emerald-200',
 };
 
 function timeAgo(str) {
@@ -37,23 +37,22 @@ function ImageCard({ url }) {
 }
 
 function TicketCard({ ticket, userEmail, userName }) {
-  const ss = STATUS_STYLES[ticket.status] || { pill:'bg-gray-100 text-gray-500 border-gray-200', dot:'bg-gray-400', label: ticket.status };
+  const ss = STATUS_STYLES[ticket.status] || { pill: 'bg-gray-100 text-gray-500 border-gray-200', dot: 'bg-gray-400', label: ticket.status };
   const ps = PRIORITY_STYLES[ticket.priority] || 'bg-gray-100 text-gray-500 border-gray-200';
   const dateStr = ticket.createdAt
-    ? new Date(ticket.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' })
+    ? new Date(ticket.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
     : '';
 
   return (
     <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-white/60 dark:border-gray-700/50 rounded-2xl shadow-sm shadow-indigo-100/30 hover:shadow-md hover:shadow-indigo-100/50 transition-all duration-200 overflow-hidden">
 
       {/* Top colour bar */}
-      <div className={`h-1 w-full ${
-        ticket.status === 'OPEN'        ? 'bg-gradient-to-r from-blue-400 to-blue-600' :
+      <div className={`h-1 w-full ${ticket.status === 'OPEN' ? 'bg-gradient-to-r from-blue-400 to-blue-600' :
         ticket.status === 'IN_PROGRESS' ? 'bg-gradient-to-r from-amber-400 to-amber-600' :
-        ticket.status === 'RESOLVED'    ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' :
-        ticket.status === 'REJECTED'    ? 'bg-gradient-to-r from-red-400 to-red-600' :
-                                          'bg-gradient-to-r from-gray-300 to-gray-400'
-      }`} />
+          ticket.status === 'RESOLVED' ? 'bg-gradient-to-r from-emerald-400 to-emerald-600' :
+            ticket.status === 'REJECTED' ? 'bg-gradient-to-r from-red-400 to-red-600' :
+              'bg-gradient-to-r from-gray-300 to-gray-400'
+        }`} />
 
       <div className="p-5">
         {/* Header row */}
@@ -138,20 +137,23 @@ function TicketCard({ ticket, userEmail, userName }) {
 }
 
 export default function MyTickets() {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = JSON.parse(localStorage.getItem('sch_user') || '{}');
   const userEmail = user.email || '';
-  const userName  = user.name  || user.email || 'User';
+  const userName = user.name || user.email || 'User';
 
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState('');
-  const [filter,  setFilter]  = useState('ALL');
+  const [error, setError] = useState('');
+  const [filter, setFilter] = useState('ALL');
 
   useEffect(() => {
     if (!userEmail) { setError('You are not logged in.'); setLoading(false); return; }
-    fetch(`${BASE_URL}/api/tickets/my?email=${encodeURIComponent(userEmail)}`)
+    const token = localStorage.getItem('sch_token');
+    fetch(`${BASE_URL}/api/v1/member3/tickets?mine=true`, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    })
       .then(r => { if (!r.ok) throw new Error('Failed to fetch tickets'); return r.json(); })
-      .then(data => { setTickets(data); setLoading(false); })
+      .then(data => { setTickets(Array.isArray(data) ? data : (data.data || [])); setLoading(false); })
       .catch(err => { setError(err.message); setLoading(false); });
   }, [userEmail]);
 
@@ -188,10 +190,10 @@ export default function MyTickets() {
           {tickets.length > 0 && (
             <div className="ml-auto hidden sm:flex gap-2">
               <span className="text-xs bg-indigo-100 text-indigo-600 px-2.5 py-1 rounded-full font-semibold border border-indigo-200">
-                {tickets.filter(t=>t.status==='OPEN').length} Open
+                {tickets.filter(t => t.status === 'OPEN').length} Open
               </span>
               <span className="text-xs bg-emerald-100 text-emerald-600 px-2.5 py-1 rounded-full font-semibold border border-emerald-200">
-                {tickets.filter(t=>t.status==='RESOLVED').length} Resolved
+                {tickets.filter(t => t.status === 'RESOLVED').length} Resolved
               </span>
             </div>
           )}
@@ -202,13 +204,12 @@ export default function MyTickets() {
           <div className="flex gap-1.5 flex-wrap mb-6 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-2 shadow-sm">
             {STATUSES.map(s => (
               <button key={s} onClick={() => setFilter(s)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
-                  filter === s
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                    : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400'
-                }`}>
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 ${filter === s
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                  : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400'
+                  }`}>
                 {s === 'IN_PROGRESS' ? 'IN PROG' : s}
-                {s !== 'ALL' && <span className="ml-1 opacity-60">{tickets.filter(t=>t.status===s).length}</span>}
+                {s !== 'ALL' && <span className="ml-1 opacity-60">{tickets.filter(t => t.status === s).length}</span>}
               </button>
             ))}
           </div>

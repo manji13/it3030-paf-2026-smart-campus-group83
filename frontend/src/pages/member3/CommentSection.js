@@ -141,9 +141,16 @@ export default function CommentSection(props) {
 
   function fetchComments() {
     setLoading(true);
-    fetch(BASE_URL + '/api/tickets/' + ticketId + '/comments')
+    const token = localStorage.getItem('sch_token');
+    fetch(BASE_URL + '/api/v1/member3/tickets/' + ticketId, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    })
       .then(function (res) { return res.json(); })
-      .then(function (data) { setComments(data); setLoading(false); })
+      .then(function (data) { 
+          const payload = data.data || data;
+          setComments(payload.comments || []); 
+          setLoading(false); 
+      })
       .catch(function () { setLoading(false); });
   }
 
@@ -154,10 +161,13 @@ export default function CommentSection(props) {
   function handleAddComment() {
     if (!newText.trim()) return;
     setSubmitting(true);
-
-    fetch(BASE_URL + '/api/tickets/' + ticketId + '/comments', {
+    const token = localStorage.getItem('sch_token');
+    fetch(BASE_URL + '/api/v1/member3/tickets/' + ticketId + '/comments', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
       body: JSON.stringify({
         authorEmail: currentEmail,
         authorName: currentName,
@@ -166,8 +176,9 @@ export default function CommentSection(props) {
       })
     })
       .then(function (res) { return res.json(); })
-      .then(function (newComment) {
-        setComments(comments.concat([newComment]));
+      .then(function (resData) {
+        const payload = resData.data || resData;
+        setComments(payload.comments || []);
         setNewText('');
         setSubmitting(false);
       })
@@ -175,24 +186,29 @@ export default function CommentSection(props) {
   }
 
   function handleEdit(commentId, updatedText) {
-    fetch(BASE_URL + '/api/comments/' + commentId, {
+    const token = localStorage.getItem('sch_token');
+    fetch(BASE_URL + '/api/v1/member3/tickets/' + ticketId + '/comments/' + commentId, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
       body: JSON.stringify({ requestEmail: currentEmail, text: updatedText })
     })
       .then(function (res) { return res.json(); })
-      .then(function (updated) {
-        setComments(comments.map(function (c) {
-          return c.id === commentId ? updated : c;
-        }));
+      .then(function (resData) {
+        const payload = resData.data || resData;
+        setComments(payload.comments || []);
       })
       .catch(function () { alert('Failed to edit comment'); });
   }
 
   function handleDelete(commentId) {
     if (!window.confirm('Delete this comment?')) return;
-    fetch(BASE_URL + '/api/comments/' + commentId + '?requestEmail=' + encodeURIComponent(currentEmail) + '&isAdmin=' + isAdmin, {
-      method: 'DELETE'
+    const token = localStorage.getItem('sch_token');
+    fetch(BASE_URL + '/api/v1/member3/tickets/' + ticketId + '/comments/' + commentId, {
+      method: 'DELETE',
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     })
       .then(function () {
         setComments(comments.filter(function (c) { return c.id !== commentId; }));
