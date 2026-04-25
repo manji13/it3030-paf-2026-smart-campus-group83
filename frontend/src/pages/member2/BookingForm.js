@@ -47,15 +47,10 @@ export default function BookingForm() {
                 ...formData,
                 expectedAttendees: parseInt(formData.expectedAttendees, 10)
             });
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                const user = JSON.parse(userStr);
-                const role = (user.role || 'USER').toUpperCase();
-                if (role === 'ADMIN') {
-                    navigate('/admin-page/bookinglist');
-                } else {
-                    navigate('/booking');
-                }
+            const user = JSON.parse(localStorage.getItem('sch_user') || '{}');
+            const roles = user.roles || [];
+            if (roles.includes('ADMIN')) {
+                navigate('/admin-page/bookinglist');
             } else {
                 navigate('/booking');
             }
@@ -154,15 +149,10 @@ export default function BookingForm() {
                         {/* Actions */}
                         <div className="flex gap-3 pt-1">
                             <button type="button" onClick={() => {
-                                const userStr = localStorage.getItem('user');
-                                if (userStr) {
-                                    const user = JSON.parse(userStr);
-                                    const role = (user.role || 'USER').toUpperCase();
-                                    if (role === 'ADMIN') {
-                                        navigate('/admin-page/bookinglist');
-                                    } else {
-                                        navigate('/booking');
-                                    }
+                                const user = JSON.parse(localStorage.getItem('sch_user') || '{}');
+                                const roles = user.roles || [];
+                                if (roles.includes('ADMIN')) {
+                                    navigate('/admin-page/bookinglist');
                                 } else {
                                     navigate('/booking');
                                 }

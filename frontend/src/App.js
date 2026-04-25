@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import TicketForm from './pages/member3/TicketForm';
 import TicketList from './pages/member3/TicketList';
+import ProtectedRoute from './routes/ProtectedRoute';
 
 // Member 4 Pages
 import Login from './pages/Member 4/Login';
@@ -47,10 +48,12 @@ function App() {
         <Route path="/facilities/new" element={<FacilityForm />} />
         <Route path="/facilities/edit/:id" element={<FacilityForm />} />
 
-        {/* Member 2 Routes */}
-        <Route path="/booking" element={<BookingList />} />
-        <Route path="/booking/new" element={<BookingForm />} />
-        <Route path="/admin-page/bookings" element={<AdminBookingList />} />
+        {/* Member 2 Routes - Protected */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/booking" element={<BookingList />} />
+          <Route path="/booking/new" element={<BookingForm />} />
+          <Route path="/admin-page/bookings" element={<AdminBookingList />} />
+        </Route>
 
         {/* Member 3 Routes */}
         <Route path="/ticketList" element={<TicketList />} />

@@ -3,8 +3,8 @@ import axios from 'axios';
 const API_URL = 'http://localhost:8000/api/v1/member1/resources';
 
 const getAuthHeader = () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return user.token ? { Authorization: `Bearer ${user.token}` } : {};
+    const token = localStorage.getItem('sch_token');
+    return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
 const getFacilities = (params) => {

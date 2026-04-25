@@ -13,20 +13,21 @@ export default function BookingList() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const userStr = localStorage.getItem('user');
+        const userStr = localStorage.getItem('sch_user');
         if (userStr) {
             const user = JSON.parse(userStr);
-            const role = (user.role || 'USER').toUpperCase();
-            setUserRole(role);
+            const roles = user.roles || ['USER'];
+            const isAdmin = roles.includes('ADMIN');
+            setUserRole(isAdmin ? 'ADMIN' : 'USER');
             setUserName(user.name || '');
             setUserEmail(user.email || '');
             
-            if (window.location.pathname === '/admin-page/bookinglist' && role !== 'ADMIN') {
+            if (window.location.pathname === '/admin-page/bookinglist' && !isAdmin) {
                 navigate('/booking');
                 return;
             }
             
-            fetchBookings(role);
+            fetchBookings(isAdmin ? 'ADMIN' : 'USER');
         } else {
             if (window.location.pathname === '/admin-page/bookinglist') {
                 navigate('/login');

@@ -1,6 +1,8 @@
+// Login.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
+import { useAuthContext } from '../../context/AuthContext';
 import axios from 'axios';
 
 export default function Login() {
@@ -11,9 +13,9 @@ export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [pageLoaded, setPageLoaded] = useState(false);
-    const [redirectData, setRedirectData] = useState(null);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const navigate = useNavigate();
+    const { saveSession } = useAuthContext();
 
     // Page entrance animation
     useEffect(() => {
@@ -119,15 +121,14 @@ export default function Login() {
             });
             const authData = response.data?.data || response.data;
             const user = {
-                token: authData.token,
-                userId: authData.userId,
+                id: authData.userId,
                 email: authData.email,
                 name: authData.name,
                 pictureUrl: authData.pictureUrl,
-                role: authData.roles ? [...authData.roles][0] : 'USER',
+                roles: authData.roles && Array.isArray(authData.roles) ? authData.roles : ['USER']
             };
-            localStorage.setItem('user', JSON.stringify(user));
-            setRedirectData(user);
+            // Use AuthContext to save session
+            saveSession(authData.token, user);
             setIsLoading(false);
             setShowSuccessModal(true);
         } catch (error) {
@@ -153,15 +154,14 @@ export default function Login() {
                 });
                 const authData = response.data?.data || response.data;
                 const user = {
-                    token: authData.token,
-                    userId: authData.userId,
+                    id: authData.userId,
                     email: authData.email,
                     name: authData.name,
                     pictureUrl: authData.pictureUrl,
-                    role: authData.roles ? [...authData.roles][0] : 'USER',
+                    roles: authData.roles && Array.isArray(authData.roles) ? authData.roles : ['USER']
                 };
-                localStorage.setItem('user', JSON.stringify(user));
-                setRedirectData(user);
+                // Use AuthContext to save session
+                saveSession(authData.token, user);
                 setGoogleLoading(false);
                 setShowSuccessModal(true);
             } catch (error) {
@@ -178,11 +178,7 @@ export default function Login() {
     const handleModalClose = () => {
         setShowSuccessModal(false);
         setTimeout(() => {
-            if (redirectData?.role?.toUpperCase() === 'ADMIN') {
-                navigate('/admin-page');
-            } else {
-                navigate('/student-page');
-            }
+            navigate('/student-page');
         }, 300);
     };
 

@@ -23,10 +23,11 @@ export default function AdminBookingList() {
 
     /* ── Auth guard ── */
     useEffect(() => {
-        const userStr = localStorage.getItem('user');
+        const userStr = localStorage.getItem('sch_user');
         if (!userStr) { navigate('/login'); return; }
         const user = JSON.parse(userStr);
-        if ((user.role || '').toUpperCase() !== 'ADMIN') { navigate('/admin-page'); return; }
+        const roles = user.roles || [];
+        if (!roles.includes('ADMIN')) { navigate('/student-page'); return; }
         setUserName(user.name  || '');
         setUserEmail(user.email || '');
     }, [navigate]);

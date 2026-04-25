@@ -3,8 +3,8 @@ import axios from 'axios';
 const BASE_URL = 'http://localhost:8000/api/v1/member2/bookings';
 
 const getAuthHeader = () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return user.token ? { Authorization: `Bearer ${user.token}` } : {};
+    const token = localStorage.getItem('sch_token');
+    return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
 const createBooking = (data) => {

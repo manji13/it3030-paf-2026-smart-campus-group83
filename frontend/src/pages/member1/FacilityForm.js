@@ -18,14 +18,15 @@ function FacilityForm() {
 
     useEffect(() => {
         // Guard: only ADMIN can add/edit facilities
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (!user.token) {
+        const token = localStorage.getItem('sch_token');
+        const user = JSON.parse(localStorage.getItem('sch_user') || '{}');
+        if (!token) {
             alert('Please log in to manage facilities.');
             navigate('/login');
             return;
         }
-        const role = (user.role || '').toUpperCase();
-        if (role !== 'ADMIN') {
+        const roles = user.roles || [];
+        if (!roles.includes('ADMIN')) {
             alert('Only administrators can add or edit facilities.');
             navigate('/facilities');
             return;
