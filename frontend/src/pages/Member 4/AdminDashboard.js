@@ -8,7 +8,7 @@ import {
 
 const API_BASE = 'http://localhost:8000';
 
-/* ── colour palettes ─────────────────────────────────────────── */
+/* ── color palettes ──────────────────────────────────────────── */
 const USER_COLORS   = ['#6366f1', '#14b8a6', '#3b82f6'];   // admin | tech | user
 const TICKET_COLORS = {
     OPEN:        '#6366f1',
@@ -164,6 +164,14 @@ export default function AdminDashboard() {
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
                                 View Tickets
+                            </button>
+                            <button
+                                id="admin-dashboard-add-resources"
+                                onClick={() => navigate('/admin-facilities')}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold transition-all shadow-lg shadow-teal-900/40"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                Add Resources
                             </button>
                         </div>
                     </div>
@@ -366,11 +374,12 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* ── ROW 3: Quick-action cards ──────────────────────────── */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                             {[
                                 { icon: '🎫', label: 'Ticket List', sub: 'Assign & review tickets', color: 'from-indigo-600 to-purple-600', path: '/ticketList' },
                                 { icon: '👥', label: 'Manage Users', sub: 'Roles & access control', color: 'from-teal-500 to-cyan-600',   path: '/users' },
                                 { icon: '🔔', label: 'Notifications', sub: 'Admin alerts & updates',  color: 'from-amber-500 to-orange-500', path: '/notifications' },
+                                { icon: '🏢', label: 'Facilities', sub: 'Manage campus resources',  color: 'from-emerald-500 to-teal-600', path: '/admin-facilities' },
                             ].map(q => (
                                 <button
                                     key={q.label}

@@ -46,6 +46,7 @@ export default function AdminNav({ userName, userEmail, onLogout }) {
     const isUsersActive = location.pathname === '/users';
     const isTicketListActive = location.pathname === '/ticketList';
     const isBookingsActive = location.pathname === '/bookings';
+    const isFacilitiesActive = location.pathname.startsWith('/admin-facilities');
 
     const handleDashboardClick = () => {
         navigate('/admin-page');
@@ -61,6 +62,10 @@ export default function AdminNav({ userName, userEmail, onLogout }) {
 
     const handleBookingsClick = () => {
         navigate('/bookings');
+    };
+
+    const handleFacilitiesClick = () => {
+        navigate('/admin-facilities');
     };
 
     const handleLogout = () => {
@@ -128,6 +133,18 @@ export default function AdminNav({ userName, userEmail, onLogout }) {
                             </svg>
                             <span className="hidden sm:inline">Bookings</span>
                             <span className="sm:hidden">Books</span>
+                        </button>
+
+                        <button
+                            id="admin-nav-facilities"
+                            onClick={handleFacilitiesClick}
+                            className={`px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer flex items-center gap-2 ${getButtonClasses(isFacilitiesActive)}`}
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <span className="hidden sm:inline">Facilities</span>
+                            <span className="sm:hidden">Fac</span>
                         </button>
                     </div>
 

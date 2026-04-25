@@ -169,6 +169,8 @@ export default function Login() {
         setShowSuccessModal(false);
         setTimeout(() => {
             const roles = user?.roles || [];
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const roles = storedUser.roles || [];
             if (roles.includes('ADMIN')) {
                 navigate('/admin-page');
             } else if (roles.includes('TECHNICIAN')) {
