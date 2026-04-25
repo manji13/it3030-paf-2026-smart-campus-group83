@@ -21,7 +21,13 @@ export default function UserManagement() {
             const token = localStorage.getItem('sch_token');
             const headers = token ? { Authorization: `Bearer ${token}` } : {};
             const res = await axios.get('http://localhost:8000/api/v1/auth/users', { headers });
-            setUsers(res.data?.data || []);
+            const usersData = res.data?.data || [];
+            // Map roles array to a single role string for the UI table
+            const mappedUsers = usersData.map(u => ({
+                ...u,
+                role: u.roles && u.roles.length > 0 ? u.roles[0] : 'USER'
+            }));
+            setUsers(mappedUsers);
         } catch (error) {
             console.error("Error fetching users", error);
             showToastMessage('Error fetching users. Make sure you are logged in as Admin.', 'error');

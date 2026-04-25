@@ -137,21 +137,11 @@ export default function Login() {
                     headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
                 });
                 const { email, name, picture } = profileRes.data;
-                const response = await axios.post('http://localhost:8000/api/v1/auth/google/mock', {
+                await loginWithMockGoogle({
                     email,
                     name,
                     pictureUrl: picture,
                 });
-                const authData = response.data?.data || response.data;
-                const user = {
-                    id: authData.userId,
-                    email: authData.email,
-                    name: authData.name,
-                    pictureUrl: authData.pictureUrl,
-                    roles: authData.roles && Array.isArray(authData.roles) ? authData.roles : ['USER']
-                };
-                // Use AuthContext to save session
-                saveSession(authData.token, user);
                 setGoogleLoading(false);
                 setShowSuccessModal(true);
             } catch (error) {
@@ -168,9 +158,8 @@ export default function Login() {
     const handleModalClose = () => {
         setShowSuccessModal(false);
         setTimeout(() => {
-            const roles = user?.roles || [];
-            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-            const roles = storedUser.roles || [];
+            const storedUser = JSON.parse(localStorage.getItem('sch_user') || '{}');
+            const roles = user?.roles?.length > 0 ? user.roles : (storedUser.roles || []);
             if (roles.includes('ADMIN')) {
                 navigate('/admin-page');
             } else if (roles.includes('TECHNICIAN')) {

@@ -51,7 +51,25 @@ public class TicketServiceMember3 {
                 .createdBy(userId)
                 .build();
 
-        return mapToResponse(ticketRepositoryMember3.save(ticket));
+        Ticket saved = ticketRepositoryMember3.save(ticket);
+        
+        // Notify Admins
+        try {
+            userRepositoryMember4.findByRolesContains(com.smartcampushub.enums.UserRole.ADMIN).forEach(admin -> {
+                notificationServiceMember4.createNotification(
+                        admin.getId(),
+                        "New Ticket Created",
+                        "A new ticket has been created: " + saved.getCategory(),
+                        NotificationType.TICKET_CREATED,
+                        "/ticketList"
+                );
+            });
+        } catch (Exception e) {
+            // Log error but don't fail ticket creation
+            System.err.println("Failed to send admin notifications: " + e.getMessage());
+        }
+
+        return mapToResponse(saved);
     }
 
     public List<TicketResponseMember3> listTickets(String createdBy, TicketStatus status) {
@@ -77,20 +95,52 @@ public class TicketServiceMember3 {
         Ticket ticket = getTicketEntity(ticketId);
         ticket.setAssignedTechnicianId(technicianId);
         ticket.setUpdatedAt(Instant.now());
-        return mapToResponse(ticketRepositoryMember3.save(ticket));
+        Ticket saved = ticketRepositoryMember3.save(ticket);
+
+        // Notify Technician
+        notificationServiceMember4.createNotification(
+                technicianId,
+                "New Ticket Assigned",
+                "You have been assigned to a new ticket: " + saved.getCategory(),
+                NotificationType.TICKET_ASSIGNED,
+                "/technician-tickets"
+        );
+
+        // Notify Creator
+        notificationServiceMember4.createNotification(
+                saved.getCreatedBy(),
+                "Technician Assigned",
+                "A technician has been assigned to your ticket: " + saved.getCategory(),
+                NotificationType.TICKET_ASSIGNED,
+                "/my-tickets"
+        );
+
+        return mapToResponse(saved);
     }
 
     public TicketResponseMember3 updateStatus(String ticketId, TicketStatusUpdateRequestMember3 request) {
         Ticket ticket = getTicketEntity(ticketId);
         ticket.setStatus(request.getStatus());
+        if (request.getResolutionNotes() != null) {
+            ticket.setResolutionNotes(request.getResolutionNotes().trim());
+        }
+        if (request.getRejectionReason() != null) {
+            ticket.setRejectionReason(request.getRejectionReason().trim());
+        }
         ticket.setUpdatedAt(Instant.now());
 
         Ticket saved = ticketRepositoryMember3.save(ticket);
+        
+        String actionInfo = "";
+        if (saved.getStatus() == TicketStatus.RESOLVED) actionInfo = " (Resolution: " + saved.getResolutionNotes() + ")";
+        if (saved.getStatus() == TicketStatus.REJECTED) actionInfo = " (Reason: " + saved.getRejectionReason() + ")";
+
         notificationServiceMember4.createNotification(
                 saved.getCreatedBy(),
-                "Ticket Status Updated",
-                "Your ticket status is now: " + saved.getStatus(),
-                NotificationType.TICKET_STATUS_CHANGED
+                "Ticket Action: " + saved.getStatus(),
+                "Technician updated your ticket for " + saved.getCategory() + actionInfo,
+                NotificationType.TICKET_STATUS_CHANGED,
+                "/my-tickets"
         );
         return mapToResponse(saved);
     }
@@ -118,12 +168,26 @@ public class TicketServiceMember3 {
 
         Ticket saved = ticketRepositoryMember3.save(ticket);
 
-        if (!saved.getCreatedBy().equals(userId)) {
+        // Notify counterparty
+        if (saved.getCreatedBy().equals(userId)) {
+            // User commented, notify technician if assigned
+            if (saved.getAssignedTechnicianId() != null) {
+                notificationServiceMember4.createNotification(
+                        saved.getAssignedTechnicianId(),
+                        "New Ticket Comment",
+                        "The user added a comment to ticket: " + saved.getCategory(),
+                        NotificationType.TICKET_COMMENT_ADDED,
+                        "/technician-tickets"
+                );
+            }
+        } else {
+            // Technician (or admin) commented, notify creator
             notificationServiceMember4.createNotification(
                     saved.getCreatedBy(),
                     "New Ticket Comment",
-                    "A new comment was added to your ticket.",
-                    NotificationType.TICKET_COMMENT_ADDED
+                    "A new comment was added to your ticket: " + saved.getCategory(),
+                    NotificationType.TICKET_COMMENT_ADDED,
+                    "/my-tickets"
             );
         }
 
@@ -184,6 +248,17 @@ public class TicketServiceMember3 {
     }
 
     private TicketResponseMember3 mapToResponse(Ticket ticket) {
+        String techName = null;
+        String techEmail = null;
+
+        if (ticket.getAssignedTechnicianId() != null) {
+            var tech = userRepositoryMember4.findById(ticket.getAssignedTechnicianId());
+            if (tech.isPresent()) {
+                techName = tech.get().getName();
+                techEmail = tech.get().getEmail();
+            }
+        }
+
         return TicketResponseMember3.builder()
                 .id(ticket.getId())
                 .resourceId(ticket.getResourceId())
@@ -195,7 +270,10 @@ public class TicketServiceMember3 {
                 .attachments(ticket.getAttachments())
                 .status(ticket.getStatus())
                 .assignedTechnicianId(ticket.getAssignedTechnicianId())
+                .assignedTo(techName)
+                .assignedToEmail(techEmail)
                 .resolutionNotes(ticket.getResolutionNotes())
+                .rejectionReason(ticket.getRejectionReason())
                 .createdBy(ticket.getCreatedBy())
                 .comments(ticket.getComments())
                 .createdAt(ticket.getCreatedAt())

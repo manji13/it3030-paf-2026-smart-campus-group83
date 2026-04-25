@@ -7,33 +7,33 @@ const BACKEND_BASE = 'http://localhost:8000';
 const STATUS_FLOW = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED'];
 
 const STATUS_STYLES = {
-  OPEN:        { pill: 'bg-blue-500/20 text-blue-300 border-blue-500/30',     dot: 'bg-blue-400' },
-  IN_PROGRESS: { pill: 'bg-amber-500/20 text-amber-300 border-amber-500/30',  dot: 'bg-amber-400' },
-  RESOLVED:    { pill: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', dot: 'bg-emerald-400' },
-  CLOSED:      { pill: 'bg-gray-500/20 text-gray-400 border-gray-500/30',     dot: 'bg-gray-400' },
-  REJECTED:    { pill: 'bg-red-500/20 text-red-300 border-red-500/30',        dot: 'bg-red-400' },
+  OPEN: { pill: 'bg-blue-500/20 text-blue-300 border-blue-500/30', dot: 'bg-blue-400' },
+  IN_PROGRESS: { pill: 'bg-amber-500/20 text-amber-300 border-amber-500/30', dot: 'bg-amber-400' },
+  RESOLVED: { pill: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', dot: 'bg-emerald-400' },
+  CLOSED: { pill: 'bg-gray-500/20 text-gray-400 border-gray-500/30', dot: 'bg-gray-400' },
+  REJECTED: { pill: 'bg-red-500/20 text-red-300 border-red-500/30', dot: 'bg-red-400' },
 };
 
-  const fetchTickets = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(API_BASE_URL);
-      if (!response.ok) throw new Error('Failed to fetch');
-      const json = await response.json();
-      // Backend wraps response: { success, message, data: [...] }
-      setTickets(Array.isArray(json) ? json : (json.data || []));
-      setError('');
-    } catch (err) {
-      console.error(err);
-      setError('Failed to load tickets');
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchTickets = async () => {
+  try {
+    setLoading(true);
+    const response = await fetch(API_BASE_URL);
+    if (!response.ok) throw new Error('Failed to fetch');
+    const json = await response.json();
+    // Backend wraps response: { success, message, data: [...] }
+    setTickets(Array.isArray(json) ? json : (json.data || []));
+    setError('');
+  } catch (err) {
+    console.error(err);
+    setError('Failed to load tickets');
+  } finally {
+    setLoading(false);
+  }
+};
 const PRIORITY_STYLES = {
-  HIGH:   'bg-red-500/20 text-red-300 border-red-500/30',
+  HIGH: 'bg-red-500/20 text-red-300 border-red-500/30',
   MEDIUM: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-  LOW:    'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+  LOW: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
 };
 
 const BASE_URL = 'http://localhost:8000';
@@ -59,16 +59,16 @@ function StatusEditor({ statusForm, setStatusForm, ticketId, onSave, onCancel, a
       <div>
         <label className="text-xs text-gray-400 mb-1 block font-semibold uppercase tracking-wide">Select Technician</label>
         <select
-          value={statusForm.assignedToEmail}
+          value={statusForm.assignedTechnicianId}
           onChange={e => {
-            const sel = adminUsers.find(u => u.email === e.target.value);
-            setStatusForm({ ...statusForm, assignedTo: sel ? (sel.name || sel.email) : '', assignedToEmail: e.target.value });
+            const sel = adminUsers.find(u => u.id === e.target.value);
+            setStatusForm({ ...statusForm, assignedTo: sel ? (sel.name || sel.email) : '', assignedTechnicianId: e.target.value });
           }}
           className="w-full p-2.5 bg-gray-700/60 border border-gray-600 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           <option value="">— Select technician —</option>
           {adminUsers.map(u => (
-            <option key={u.id} value={u.email}>{u.name || u.email} ({u.email})</option>
+            <option key={u.id} value={u.id}>{u.name || u.email} ({u.email})</option>
           ))}
         </select>
         {statusForm.assignedTo && (
@@ -96,7 +96,7 @@ function TicketDetail({ ticket, adminEmail, adminName, adminUsers, editingId, st
   const ss = STATUS_STYLES[ticket.status] || { pill: 'bg-gray-500/20 text-gray-400 border-gray-500/30', dot: 'bg-gray-400' };
   const ps = PRIORITY_STYLES[ticket.priority] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
   const dateStr = ticket.createdAt
-    ? new Date(ticket.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+    ? new Date(ticket.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     : '';
 
   return (
@@ -205,26 +205,30 @@ function TicketDetail({ ticket, adminEmail, adminName, adminUsers, editingId, st
 
 /* ── main ──────────────────────────────────────────────────────────── */
 export default function TicketList() {
-  const stored    = JSON.parse(localStorage.getItem('user') || '{}');
+  const stored = JSON.parse(localStorage.getItem('user') || '{}');
   const adminEmail = stored.email || '';
-  const adminName  = stored.name  || stored.email || 'Admin';
+  const adminName = stored.name || stored.email || 'Admin';
 
-  const [tickets,      setTickets]      = useState([]);
-  const [loading,      setLoading]      = useState(true);
-  const [error,        setError]        = useState('');
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selectedTicket, setSelectedTicket] = useState(null);
-  const [editingId,    setEditingId]    = useState(null);
-  const [statusForm,   setStatusForm]   = useState({ status:'', assignedTo:'', assignedToEmail:'', resolutionNotes:'', rejectionReason:'' });
-  const [adminUsers,   setAdminUsers]   = useState([]);
+  const [editingId, setEditingId] = useState(null);
+  const [statusForm, setStatusForm] = useState({ status: '', assignedTo: '', assignedToEmail: '', resolutionNotes: '', rejectionReason: '' });
+  const [adminUsers, setAdminUsers] = useState([]);
   const [filterStatus, setFilterStatus] = useState('ALL');
-  const [searchText,   setSearchText]   = useState('');
+  const [searchText, setSearchText] = useState('');
 
   function fetchTickets() {
     setLoading(true);
-    fetch(BASE_URL + '/api/tickets')
+    const token = localStorage.getItem('sch_token');
+    fetch(BASE_URL + '/api/v1/member3/tickets', {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    })
       .then(r => { if (!r.ok) throw new Error('Failed'); return r.json(); })
       .then(data => {
-        const sorted = data.sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt));
+        const payload = Array.isArray(data) ? data : (data.data || []);
+        const sorted = payload.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setTickets(sorted);
         setLoading(false);
       })
@@ -236,43 +240,89 @@ export default function TicketList() {
   // Auto-poll every 30s
   useEffect(() => {
     const iv = setInterval(() => {
-      fetch(BASE_URL + '/api/tickets').then(r=>r.json()).then(data => {
-        const sorted = data.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+      const token = localStorage.getItem('sch_token');
+      fetch(BASE_URL + '/api/v1/member3/tickets', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      }).then(r => r.json()).then(data => {
+        const payload = Array.isArray(data) ? data : (data.data || []);
+        const sorted = payload.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setTickets(sorted);
-        setSelectedTicket(prev => prev ? (sorted.find(t=>t.id===prev.id)||prev) : null);
-      }).catch(()=>{});
+        setSelectedTicket(prev => prev ? (sorted.find(t => t.id === prev.id) || prev) : null);
+      }).catch(() => { });
     }, 30000);
     return () => clearInterval(iv);
   }, []);
 
   // Fetch technicians
   useEffect(() => {
-    fetch(BASE_URL + '/api/users/technicians').then(r=>r.json()).then(setAdminUsers).catch(()=>{});
+    const token = localStorage.getItem('sch_token');
+    fetch(BASE_URL + '/api/v1/auth/users/technicians', {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    }).then(r => r.json()).then(data => {
+      setAdminUsers(Array.isArray(data) ? data : (data.data || []));
+    }).catch(() => { });
   }, []);
 
   function openEdit(ticket) {
     setEditingId(ticket.id);
-    setStatusForm({ status: ticket.status, assignedTo: ticket.assignedTo||'', assignedToEmail: ticket.assignedToEmail||'', resolutionNotes: ticket.resolutionNotes||'', rejectionReason: ticket.rejectionReason||'' });
+    setStatusForm({ 
+      status: ticket.status, 
+      assignedTo: ticket.assignedTo || '', 
+      assignedTechnicianId: ticket.assignedTechnicianId || '', 
+      resolutionNotes: ticket.resolutionNotes || '', 
+      rejectionReason: ticket.rejectionReason || '' 
+    });
   }
 
-  function handleStatusUpdate(id) {
-    fetch(BASE_URL + '/api/tickets/' + id + '/status', {
-      method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(statusForm)
-    }).then(r => { if(!r.ok) throw new Error('Update failed'); setEditingId(null); fetchTickets(); })
-      .catch(err => alert(err.message));
+  async function handleStatusUpdate(id) {
+    const token = localStorage.getItem('sch_token');
+    try {
+      // 1. If technician is being assigned/changed, call assignment endpoint
+      if (statusForm.assignedTechnicianId) {
+        const assignRes = await fetch(BASE_URL + '/api/v1/member3/tickets/' + id + '/assign', {
+          method: 'PATCH',
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ assignedTechnicianId: statusForm.assignedTechnicianId })
+        });
+        if (!assignRes.ok) throw new Error('Technician assignment failed');
+      }
+
+      // 2. Update status and other notes
+      const statusRes = await fetch(BASE_URL + '/api/v1/member3/tickets/' + id + '/status', {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ status: statusForm.status })
+      });
+      if (!statusRes.ok) throw new Error('Status update failed');
+
+      setEditingId(null);
+      fetchTickets();
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   function handleDelete(id) {
     if (!window.confirm('Delete this ticket?')) return;
-    fetch(BASE_URL + '/api/tickets/' + id, { method:'DELETE' })
+    const token = localStorage.getItem('sch_token');
+    fetch(BASE_URL + '/api/v1/member3/tickets/' + id, { 
+      method: 'DELETE',
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    })
       .then(() => { setSelectedTicket(null); fetchTickets(); });
   }
 
   const filtered = tickets.filter(t => {
     const matchStatus = filterStatus === 'ALL' || t.status === filterStatus;
     const q = searchText.toLowerCase();
-    const matchSearch = !q || (t.resource&&t.resource.toLowerCase().includes(q)) ||
-      (t.userEmail&&t.userEmail.toLowerCase().includes(q)) || (t.category&&t.category.toLowerCase().includes(q));
+    const matchSearch = !q || (t.resource && t.resource.toLowerCase().includes(q)) ||
+      (t.userEmail && t.userEmail.toLowerCase().includes(q)) || (t.category && t.category.toLowerCase().includes(q));
     return matchStatus && matchSearch;
   });
 
@@ -332,11 +382,10 @@ export default function TicketList() {
                 <div className="flex gap-1.5 flex-wrap">
                   {['ALL', ...STATUS_FLOW].map(s => (
                     <button key={s} onClick={() => setFilterStatus(s)}
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
-                        filterStatus === s
-                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                          : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/60 hover:text-gray-200'
-                      }`}>
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all ${filterStatus === s
+                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                        : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/60 hover:text-gray-200'
+                        }`}>
                       {s === 'IN_PROGRESS' ? 'IN PROG' : s}
                     </button>
                   ))}
@@ -352,19 +401,18 @@ export default function TicketList() {
                   </div>
                 ) : filtered.map(ticket => {
                   const isSelected = selectedTicket?.id === ticket.id;
-                  const ss = STATUS_STYLES[ticket.status] || { pill:'', dot:'bg-gray-400' };
+                  const ss = STATUS_STYLES[ticket.status] || { pill: '', dot: 'bg-gray-400' };
                   const dateStr = ticket.createdAt
-                    ? new Date(ticket.createdAt).toLocaleDateString('en-US', { month:'short', day:'numeric' })
+                    ? new Date(ticket.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
                     : '';
 
                   return (
                     <div key={ticket.id}
                       onClick={() => { setSelectedTicket(ticket); setEditingId(null); }}
-                      className={`px-4 py-3.5 border-b border-gray-700/40 cursor-pointer transition-all duration-150 relative ${
-                        isSelected
-                          ? 'bg-indigo-600/10 border-l-2 border-l-indigo-500'
-                          : 'hover:bg-gray-800/60 border-l-2 border-l-transparent'
-                      }`}>
+                      className={`px-4 py-3.5 border-b border-gray-700/40 cursor-pointer transition-all duration-150 relative ${isSelected
+                        ? 'bg-indigo-600/10 border-l-2 border-l-indigo-500'
+                        : 'hover:bg-gray-800/60 border-l-2 border-l-transparent'
+                        }`}>
                       <div className="flex items-center justify-between mb-0.5">
                         <span className="text-xs font-semibold text-gray-300 truncate max-w-[160px]">
                           {ticket.userEmail || 'Unknown'}

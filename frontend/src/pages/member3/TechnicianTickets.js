@@ -5,38 +5,42 @@ import CommentSection from '../member3/CommentSection';
 const BASE_URL = 'http://localhost:8000';
 
 const STATUS_COLORS = {
-    OPEN:        'bg-blue-100 text-blue-700',
+    OPEN: 'bg-blue-100 text-blue-700',
     IN_PROGRESS: 'bg-yellow-100 text-yellow-700',
-    RESOLVED:    'bg-green-100 text-green-700',
-    CLOSED:      'bg-gray-200 text-gray-600',
-    REJECTED:    'bg-red-100 text-red-600',
+    RESOLVED: 'bg-green-100 text-green-700',
+    CLOSED: 'bg-gray-200 text-gray-600',
+    REJECTED: 'bg-red-100 text-red-600',
 };
 const PRIORITY_COLORS = {
-    HIGH:   'bg-red-100 text-red-600',
+    HIGH: 'bg-red-100 text-red-600',
     MEDIUM: 'bg-yellow-100 text-yellow-600',
-    LOW:    'bg-green-100 text-green-600',
+    LOW: 'bg-green-100 text-green-600',
 };
 
 const STATUS_FLOW = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED'];
 
 export default function TechnicianTickets() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem('sch_user') || '{}');
     const techEmail = user.email || '';
-    const techName  = user.name  || user.email || 'Technician';
+    const techName = user.name || user.email || 'Technician';
 
-    const [tickets, setTickets]         = useState([]);
-    const [loading, setLoading]         = useState(true);
+    const [tickets, setTickets] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [selectedTicket, setSelected] = useState(null);
-    const [searchText, setSearchText]   = useState('');
-    const [filterStatus, setFilter]     = useState('ALL');
+    const [searchText, setSearchText] = useState('');
+    const [filterStatus, setFilter] = useState('ALL');
 
     // ── Fetch (shared by initial load + polling + post-update refresh) ────────
     const fetchTickets = useCallback(async (silent = false) => {
         if (!silent) setLoading(true);
         try {
-            const res  = await fetch(`${BASE_URL}/api/tickets`);
+            const token = localStorage.getItem('sch_token');
+            const res  = await fetch(`${BASE_URL}/api/v1/member3/tickets`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
             const data = await res.json();
-            const mine = data.filter(t => t.assignedToEmail === techEmail);
+            const payload = Array.isArray(data) ? data : (data.data || []);
+            const mine = payload.filter(t => t.assignedToEmail === techEmail);
             mine.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setTickets(mine);
             // Keep the right panel ticket up-to-date
@@ -45,7 +49,7 @@ export default function TechnicianTickets() {
                 const fresh = mine.find(t => t.id === prev.id);
                 return fresh || prev;
             });
-        } catch (_) {}
+        } catch (_) { }
         finally { if (!silent) setLoading(false); }
     }, [techEmail]);
 
@@ -90,9 +94,8 @@ export default function TechnicianTickets() {
                                 <button
                                     key={s}
                                     onClick={() => setFilter(s)}
-                                    className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
-                                        filterStatus === s ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                    }`}
+                                    className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${filterStatus === s ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                        }`}
                                 >
                                     {s}
                                 </button>
@@ -107,7 +110,7 @@ export default function TechnicianTickets() {
                             <p className="text-center text-gray-400 text-sm py-10">No tickets assigned to you yet.</p>
                         ) : (
                             filtered.map(ticket => {
-                                const isSelected  = selectedTicket?.id === ticket.id;
+                                const isSelected = selectedTicket?.id === ticket.id;
                                 const statusColor = STATUS_COLORS[ticket.status] || 'bg-gray-100 text-gray-500';
                                 const dateStr = ticket.createdAt
                                     ? new Date(ticket.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -116,9 +119,8 @@ export default function TechnicianTickets() {
                                     <div
                                         key={ticket.id}
                                         onClick={() => setSelected(ticket)}
-                                        className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${
-                                            isSelected ? 'bg-teal-50 border-l-4 border-l-teal-600' : 'hover:bg-gray-50'
-                                        }`}
+                                        className={`p-4 border-b border-gray-100 cursor-pointer transition-colors ${isSelected ? 'bg-teal-50 border-l-4 border-l-teal-600' : 'hover:bg-gray-50'
+                                            }`}
                                     >
                                         <div className="flex justify-between items-center mb-0.5">
                                             <span className="text-xs font-semibold text-gray-700 truncate max-w-[150px]">{ticket.userEmail || 'Unknown'}</span>
@@ -164,26 +166,30 @@ export default function TechnicianTickets() {
 
 // ─── Status updater (only for the assigned technician) ──────────────────────
 function StatusUpdater({ ticket, techEmail, techName, onRefresh }) {
-    const [open, setOpen]           = useState(false);
+    const [open, setOpen] = useState(false);
     const [newStatus, setNewStatus] = useState(ticket.status);
-    const [notes, setNotes]         = useState(ticket.resolutionNotes || '');
-    const [reason, setReason]       = useState(ticket.rejectionReason || '');
-    const [saving, setSaving]       = useState(false);
-    const [savedMsg, setSavedMsg]   = useState('');
+    const [notes, setNotes] = useState(ticket.resolutionNotes || '');
+    const [reason, setReason] = useState(ticket.rejectionReason || '');
+    const [saving, setSaving] = useState(false);
+    const [savedMsg, setSavedMsg] = useState('');
 
     const handleSave = async () => {
         setSaving(true);
         try {
             const body = {
-                status:          newStatus,
-                assignedTo:      ticket.assignedTo   || techName,
+                status: newStatus,
+                assignedTo: ticket.assignedTo || techName,
                 assignedToEmail: ticket.assignedToEmail || techEmail,
                 resolutionNotes: notes,
                 rejectionReason: reason,
             };
-            const res = await fetch(`${BASE_URL}/api/tickets/${ticket.id}/status`, {
+            const token = localStorage.getItem('sch_token');
+            const res = await fetch(`${BASE_URL}/api/v1/member3/tickets/${ticket.id}/status`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
                 body: JSON.stringify(body),
             });
             if (!res.ok) throw new Error('Failed to update status');
@@ -282,10 +288,10 @@ function StatusUpdater({ ticket, techEmail, techName, onRefresh }) {
 
 // ─── Ticket detail view ──────────────────────────────────────────────────────
 function TicketView({ ticket, techEmail, techName, onRefresh }) {
-    const statusColor   = STATUS_COLORS[ticket.status]    || 'bg-gray-100 text-gray-500';
+    const statusColor = STATUS_COLORS[ticket.status] || 'bg-gray-100 text-gray-500';
     const priorityColor = PRIORITY_COLORS[ticket.priority] || 'bg-gray-100 text-gray-500';
     const dateStr = ticket.createdAt
-        ? new Date(ticket.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+        ? new Date(ticket.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
         : '';
 
     return (

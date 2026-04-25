@@ -11,7 +11,7 @@ export default function TechnicianNav() {
     const location = useLocation();
     const menuRef = useRef(null);
 
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem('sch_user') || '{}');
     const userName  = user.name  || user.email || 'Technician';
     const userEmail = user.email || '';
 
@@ -35,8 +35,14 @@ export default function TechnicianNav() {
     const fetchUnread = async () => {
         if (!userEmail) return;
         try {
-            const res = await fetch(`${API_BASE}/api/notifications/user/unread-count?email=${encodeURIComponent(userEmail)}`);
-            if (res.ok) setUnreadCount(await res.json());
+            const token = localStorage.getItem('sch_token');
+            const res = await fetch(`${API_BASE}/api/v1/member4/notifications/me/unread-count`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setUnreadCount(data.unreadCount || (data.data && data.data.unreadCount) || 0);
+            }
         } catch (_) {}
     };
 
@@ -54,7 +60,8 @@ export default function TechnicianNav() {
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem('user');
+        localStorage.removeItem('sch_token');
+        localStorage.removeItem('sch_user');
         navigate('/login');
     };
 

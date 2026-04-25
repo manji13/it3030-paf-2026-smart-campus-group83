@@ -9,13 +9,13 @@ import {
 const API_BASE = 'http://localhost:8000';
 
 /* ── color palettes ──────────────────────────────────────────── */
-const USER_COLORS   = ['#6366f1', '#14b8a6', '#3b82f6'];   // admin | tech | user
+const USER_COLORS = ['#6366f1', '#14b8a6', '#3b82f6'];   // admin | tech | user
 const TICKET_COLORS = {
-    OPEN:        '#6366f1',
+    OPEN: '#6366f1',
     IN_PROGRESS: '#f59e0b',
-    RESOLVED:    '#10b981',
-    CLOSED:      '#6b7280',
-    REJECTED:    '#ef4444',
+    RESOLVED: '#10b981',
+    CLOSED: '#6b7280',
+    REJECTED: '#ef4444',
 };
 
 /* ── tiny helpers ────────────────────────────────────────────── */
@@ -42,9 +42,9 @@ function StatCard({ title, value, sub, icon, gradient }) {
 const RADIAN = Math.PI / 180;
 function PieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }) {
     if (percent < 0.05) return null;
-    const r  = innerRadius + (outerRadius - innerRadius) * 0.55;
-    const x  = cx + r * Math.cos(-midAngle * RADIAN);
-    const y  = cy + r * Math.sin(-midAngle * RADIAN);
+    const r = innerRadius + (outerRadius - innerRadius) * 0.55;
+    const x = cx + r * Math.cos(-midAngle * RADIAN);
+    const y = cy + r * Math.sin(-midAngle * RADIAN);
     return (
         <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={700}>
             {`${(percent * 100).toFixed(0)}%`}
@@ -56,28 +56,46 @@ function PieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent, name })
 export default function AdminDashboard() {
     const navigate = useNavigate();
 
-    const [users,       setUsers]       = useState([]);
-    const [tickets,     setTickets]     = useState([]);
-    const [loadingU,    setLoadingU]    = useState(true);
-    const [loadingT,    setLoadingT]    = useState(true);
-    const [pageLoaded,  setPageLoaded]  = useState(false);
+    const [users, setUsers] = useState([]);
+    const [tickets, setTickets] = useState([]);
+    const [loadingU, setLoadingU] = useState(true);
+    const [loadingT, setLoadingT] = useState(true);
+    const [pageLoaded, setPageLoaded] = useState(false);
 
-    const adminUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const adminUser = JSON.parse(localStorage.getItem('sch_user') || '{}');
 
     /* fetch */
     const fetchUsers = useCallback(async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/users`);
-            if (res.ok) setUsers(await res.json());
-        } catch (_) {}
+            const token = localStorage.getItem('sch_token');
+            const res = await fetch(`${API_BASE}/api/v1/auth/users`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const usersList = Array.isArray(data) ? data : (data.data || []);
+                // Map roles array to a single role string for the UI
+                const mappedUsers = usersList.map(u => ({
+                    ...u,
+                    role: u.roles && u.roles.length > 0 ? u.roles[0] : 'USER'
+                }));
+                setUsers(mappedUsers);
+            }
+        } catch (_) { }
         finally { setLoadingU(false); }
     }, []);
 
     const fetchTickets = useCallback(async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/tickets`);
-            if (res.ok) setTickets(await res.json());
-        } catch (_) {}
+            const token = localStorage.getItem('sch_token');
+            const res = await fetch(`${API_BASE}/api/v1/member3/tickets`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setTickets(Array.isArray(data) ? data : (data.data || []));
+            }
+        } catch (_) { }
         finally { setLoadingT(false); }
     }, []);
 
@@ -90,29 +108,29 @@ export default function AdminDashboard() {
     }, []);
 
     /* ── derived stats ─────────────────────────────────────────── */
-    const admins      = users.filter(u => u.role === 'ADMIN').length;
+    const admins = users.filter(u => u.role === 'ADMIN').length;
     const technicians = users.filter(u => u.role === 'TECHNICIAN').length;
-    const regularUsers= users.filter(u => u.role === 'USER').length;
+    const regularUsers = users.filter(u => u.role === 'USER').length;
 
-    const openTickets     = tickets.filter(t => t.status === 'OPEN').length;
-    const inProgress      = tickets.filter(t => t.status === 'IN_PROGRESS').length;
-    const resolved        = tickets.filter(t => t.status === 'RESOLVED').length;
-    const closed          = tickets.filter(t => t.status === 'CLOSED').length;
-    const rejected        = tickets.filter(t => t.status === 'REJECTED').length;
+    const openTickets = tickets.filter(t => t.status === 'OPEN').length;
+    const inProgress = tickets.filter(t => t.status === 'IN_PROGRESS').length;
+    const resolved = tickets.filter(t => t.status === 'RESOLVED').length;
+    const closed = tickets.filter(t => t.status === 'CLOSED').length;
+    const rejected = tickets.filter(t => t.status === 'REJECTED').length;
 
     /* ── chart data ────────────────────────────────────────────── */
     const userPieData = [
-        { name: 'Admins',      value: admins },
+        { name: 'Admins', value: admins },
         { name: 'Technicians', value: technicians },
-        { name: 'Users',       value: regularUsers },
+        { name: 'Users', value: regularUsers },
     ].filter(d => d.value > 0);
 
     const ticketBarData = [
-        { name: 'Open',        value: openTickets,  color: TICKET_COLORS.OPEN },
-        { name: 'In Progress', value: inProgress,   color: TICKET_COLORS.IN_PROGRESS },
-        { name: 'Resolved',    value: resolved,     color: TICKET_COLORS.RESOLVED },
-        { name: 'Closed',      value: closed,       color: TICKET_COLORS.CLOSED },
-        { name: 'Rejected',    value: rejected,     color: TICKET_COLORS.REJECTED },
+        { name: 'Open', value: openTickets, color: TICKET_COLORS.OPEN },
+        { name: 'In Progress', value: inProgress, color: TICKET_COLORS.IN_PROGRESS },
+        { name: 'Resolved', value: resolved, color: TICKET_COLORS.RESOLVED },
+        { name: 'Closed', value: closed, color: TICKET_COLORS.CLOSED },
+        { name: 'Rejected', value: rejected, color: TICKET_COLORS.REJECTED },
     ];
 
     /* simple daily-ish ticket trend (last 7 groups by date) */
@@ -189,12 +207,12 @@ export default function AdminDashboard() {
                     <>
                         {/* ── KPI STAT CARDS ─────────────────────────────────────── */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-                            <StatCard title="Total Users"    value={users.length}   icon="👥" gradient="bg-gradient-to-br from-indigo-600 to-indigo-800"   sub="All roles" />
-                            <StatCard title="Admins"         value={admins}         icon="🛡️" gradient="bg-gradient-to-br from-purple-600 to-purple-800"    sub="Role: Admin" />
-                            <StatCard title="Technicians"    value={technicians}    icon="🔧" gradient="bg-gradient-to-br from-teal-600 to-teal-800"        sub="Role: Technician" />
-                            <StatCard title="Total Tickets"  value={tickets.length} icon="🎫" gradient="bg-gradient-to-br from-blue-600 to-blue-800"        sub="All statuses" />
-                            <StatCard title="Open"           value={openTickets}    icon="🔵" gradient="bg-gradient-to-br from-sky-600 to-sky-800"           sub="Awaiting action" />
-                            <StatCard title="Resolved"       value={resolved}       icon="✅" gradient="bg-gradient-to-br from-emerald-600 to-emerald-800"  sub="Completed" />
+                            <StatCard title="Total Users" value={users.length} icon="👥" gradient="bg-gradient-to-br from-indigo-600 to-indigo-800" sub="All roles" />
+                            <StatCard title="Admins" value={admins} icon="🛡️" gradient="bg-gradient-to-br from-purple-600 to-purple-800" sub="Role: Admin" />
+                            <StatCard title="Technicians" value={technicians} icon="🔧" gradient="bg-gradient-to-br from-teal-600 to-teal-800" sub="Role: Technician" />
+                            <StatCard title="Total Tickets" value={tickets.length} icon="🎫" gradient="bg-gradient-to-br from-blue-600 to-blue-800" sub="All statuses" />
+                            <StatCard title="Open" value={openTickets} icon="🔵" gradient="bg-gradient-to-br from-sky-600 to-sky-800" sub="Awaiting action" />
+                            <StatCard title="Resolved" value={resolved} icon="✅" gradient="bg-gradient-to-br from-emerald-600 to-emerald-800" sub="Completed" />
                         </div>
 
                         {/* ── ROW 1: Pie + Bar ───────────────────────────────────── */}
@@ -302,7 +320,7 @@ export default function AdminDashboard() {
                                         <AreaChart data={trendData}>
                                             <defs>
                                                 <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%"  stopColor="#6366f1" stopOpacity={0.35} />
+                                                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.35} />
                                                     <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                                                 </linearGradient>
                                             </defs>
@@ -377,9 +395,9 @@ export default function AdminDashboard() {
                         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                             {[
                                 { icon: '🎫', label: 'Ticket List', sub: 'Assign & review tickets', color: 'from-indigo-600 to-purple-600', path: '/ticketList' },
-                                { icon: '👥', label: 'Manage Users', sub: 'Roles & access control', color: 'from-teal-500 to-cyan-600',   path: '/users' },
-                                { icon: '🔔', label: 'Notifications', sub: 'Admin alerts & updates',  color: 'from-amber-500 to-orange-500', path: '/notifications' },
-                                { icon: '🏢', label: 'Facilities', sub: 'Manage campus resources',  color: 'from-emerald-500 to-teal-600', path: '/admin-facilities' },
+                                { icon: '👥', label: 'Manage Users', sub: 'Roles & access control', color: 'from-teal-500 to-cyan-600', path: '/users' },
+                                { icon: '🔔', label: 'Notifications', sub: 'Admin alerts & updates', color: 'from-amber-500 to-orange-500', path: '/notifications' },
+                                { icon: '🏢', label: 'Facilities', sub: 'Manage campus resources', color: 'from-emerald-500 to-teal-600', path: '/admin-facilities' },
                             ].map(q => (
                                 <button
                                     key={q.label}

@@ -14,6 +14,7 @@ public class NotificationResponseMember4 {
     private String title;
     private String message;
     private NotificationType type;
+    private String targetPath;
     private boolean isRead;
     private Instant createdAt;
 }

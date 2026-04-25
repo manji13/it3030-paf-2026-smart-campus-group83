@@ -23,7 +23,10 @@ public class TicketResponseMember3 {
     private List<TicketAttachment> attachments;
     private TicketStatus status;
     private String assignedTechnicianId;
+    private String assignedTo;
+    private String assignedToEmail;
     private String resolutionNotes;
+    private String rejectionReason;
     private String createdBy;
     private List<TicketComment> comments;
     private Instant createdAt;

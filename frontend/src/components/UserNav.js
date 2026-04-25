@@ -12,7 +12,7 @@ export default function UserNav({ onLogout }) {
     const menuRef = useRef(null);
 
     // Read user from localStorage
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem('sch_user') || '{}');
     const userName = user.name || user.email || 'User';
     const userEmail = user.email || '';
 
@@ -40,10 +40,13 @@ export default function UserNav({ onLogout }) {
     const fetchUnreadCount = async () => {
         if (!userEmail) return;
         try {
-            const res = await fetch(`${API_BASE}/api/notifications/user/unread-count?email=${encodeURIComponent(userEmail)}`);
+            const token = localStorage.getItem('sch_token');
+            const res = await fetch(`${API_BASE}/api/v1/member4/notifications/me/unread-count`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
             if (res.ok) {
-                const count = await res.json();
-                setUnreadCount(count);
+                const data = await res.json();
+                setUnreadCount(data.unreadCount || (data.data && data.data.unreadCount) || 0);
             }
         } catch (_) {}
     };

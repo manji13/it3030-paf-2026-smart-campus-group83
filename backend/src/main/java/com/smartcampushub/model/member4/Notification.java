@@ -27,6 +27,7 @@ public class Notification {
     private String title;
     private String message;
     private NotificationType type;
+    private String targetPath;
     @Builder.Default
     private boolean isRead = false;
     @Builder.Default
