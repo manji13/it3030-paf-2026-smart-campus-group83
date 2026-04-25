@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import bookingService from '../../services/bookingService';
+import facilityService from '../../services/facilityService';
 import AdminNav from '../../components/AdminNav';
 
 export default function BookingList() {
@@ -10,6 +12,8 @@ export default function BookingList() {
     const [userName, setUserName] = useState('');
     const [userEmail, setUserEmail] = useState('');
     const [filterStatus, setFilterStatus] = useState('ALL');
+    const [facilities, setFacilities] = useState({});
+    const [qrModalBooking, setQrModalBooking] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -35,6 +39,22 @@ export default function BookingList() {
             }
             fetchBookings('USER');
         }
+
+        const fetchAllData = async () => {
+            try {
+                const facRes = await facilityService.getFacilities();
+                const facMap = {};
+                if (facRes.data && facRes.data.data) {
+                    facRes.data.data.forEach(f => {
+                        facMap[f.id] = f.name;
+                    });
+                }
+                setFacilities(facMap);
+            } catch (err) {
+                console.error("Error fetching facilities", err);
+            }
+        };
+        fetchAllData();
     }, [navigate]);
 
     const fetchBookings = async (role) => {
@@ -202,7 +222,14 @@ export default function BookingList() {
                                             return (
                                                 <tr key={booking.id} className={`transition-colors duration-200 ${isPending ? 'bg-indigo-900/10 hover:bg-indigo-900/20' : 'hover:bg-gray-700/30'}`}>
                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="font-bold text-gray-100">{booking.resourceId || '—'}</div>
+                                                        <div 
+                                                            className={`font-bold transition-colors ${booking.status === 'APPROVED' ? 'text-indigo-400 cursor-pointer hover:text-indigo-300' : 'text-gray-100'}`}
+                                                            onClick={() => booking.status === 'APPROVED' && setQrModalBooking(booking)}
+                                                            title={booking.status === 'APPROVED' ? 'Click to view Entry QR Code' : ''}
+                                                        >
+                                                            {facilities[booking.resourceId] || booking.resourceId || '—'}
+                                                            {booking.status === 'APPROVED' && <span className="ml-2 opacity-80" title="QR Pass Available">🎫</span>}
+                                                        </div>
                                                         <div className="text-gray-400 text-xs mt-1 max-w-[200px] overflow-hidden text-ellipsis" title={booking.purpose}>
                                                             {booking.purpose}
                                                         </div>
@@ -258,6 +285,43 @@ export default function BookingList() {
                     )}
                 </div>
             </div>
+
+            {/* ── QR Code Modal ── */}
+            {qrModalBooking && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setQrModalBooking(null)}></div>
+                    <div className="bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full p-8 relative z-10 border border-gray-700 flex flex-col items-center text-center" style={{ animation: 'modalPopIn 0.25s ease-out' }}>
+                        <h2 className="text-xl font-bold text-white mb-2">Booking Pass</h2>
+                        <p className="text-sm text-gray-400 mb-6 font-medium">{facilities[qrModalBooking.resourceId] || qrModalBooking.resourceId}</p>
+                        
+                        <div className="bg-white p-4 rounded-2xl mb-6 shadow-lg shadow-indigo-500/20">
+                            <QRCodeSVG 
+                                value={`Resource: ${facilities[qrModalBooking.resourceId] || qrModalBooking.resourceId}\nDate: ${qrModalBooking.date}\nTime: ${qrModalBooking.startTime} - ${qrModalBooking.endTime}\nStatus: APPROVED`} 
+                                size={200}
+                                level="H"
+                            />
+                        </div>
+                        
+                        <div className="w-full text-left bg-gray-900/50 p-4 rounded-xl border border-gray-700 mb-6">
+                            <div className="text-xs text-gray-400 mb-1 uppercase tracking-wider font-semibold">Valid For</div>
+                            <div className="text-sm text-white font-bold">{qrModalBooking.date}</div>
+                            <div className="text-sm text-gray-300">{qrModalBooking.startTime} – {qrModalBooking.endTime}</div>
+                        </div>
+
+                        <button
+                            onClick={() => setQrModalBooking(null)}
+                            className="w-full px-5 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-bold transition-all cursor-pointer shadow-lg"
+                        >Close Pass</button>
+                    </div>
+                </div>
+            )}
+
+            <style>{`
+                @keyframes modalPopIn {
+                    0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+                    100% { opacity: 1; transform: scale(1) translateY(0); }
+                }
+            `}</style>
         </div>
     );
 }

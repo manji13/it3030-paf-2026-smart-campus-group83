@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminNav from '../../components/AdminNav';
 import bookingService from '../../services/bookingService';
+import facilityService from '../../services/facilityService';
 
 const STATUS_COLORS = {
     PENDING:   { bg: 'bg-amber-100',  text: 'text-amber-800',  border: 'border-amber-300',  dot: 'bg-amber-400'  },
@@ -14,6 +15,7 @@ export default function AdminBookingList() {
     const [bookings, setBookings]           = useState([]);
     const [loading, setLoading]             = useState(true);
     const [filterStatus, setFilterStatus]   = useState('ALL');
+    const [facilities, setFacilities]       = useState({});
     const [userName, setUserName]           = useState('');
     const [userEmail, setUserEmail]         = useState('');
     const [reviewModal, setReviewModal]     = useState(null); // { id, action }
@@ -32,14 +34,27 @@ export default function AdminBookingList() {
         setUserEmail(user.email || '');
     }, [navigate]);
 
-    /* ── Fetch bookings ── */
+    /* ── Fetch bookings & facilities ── */
     const fetchBookings = useCallback(async () => {
         try {
             setLoading(true);
-            const res = await bookingService.getAllBookings();
+            const [res, facRes] = await Promise.all([
+                bookingService.getAllBookings(),
+                facilityService.getFacilities()
+            ]);
+            
             setBookings(res.data?.data || []);
+            
+            const facMap = {};
+            if (facRes.data && facRes.data.data) {
+                facRes.data.data.forEach(f => {
+                    facMap[f.id] = f.name;
+                });
+            }
+            setFacilities(facMap);
+            
         } catch (err) {
-            console.error('Error fetching bookings', err);
+            console.error('Error fetching data', err);
         } finally {
             setLoading(false);
         }
@@ -199,7 +214,7 @@ export default function AdminBookingList() {
                                             return (
                                                 <tr key={b.id} className={`transition-colors duration-200 ${isPending ? 'bg-indigo-900/10 hover:bg-indigo-900/20' : 'hover:bg-gray-700/30'}`}>
                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="font-bold text-gray-100">{b.resourceId || '—'}</div>
+                                                        <div className="font-bold text-gray-100">{facilities[b.resourceId] || b.resourceId || '—'}</div>
                                                         <div className="text-gray-400 text-xs mt-1 max-w-[200px] overflow-hidden text-ellipsis" title={b.purpose}>
                                                             {b.purpose}
                                                         </div>
