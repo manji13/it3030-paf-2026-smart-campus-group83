@@ -8,7 +8,7 @@ import ProtectedRoute from './routes/ProtectedRoute';
 
 // Member 4 Pages
 import Login from './pages/Member 4/Login';
-import Register from './pages/Member 4/Registeer.js'; // Note: check if "Registeer.js" is a typo in your folder!
+import Register from './pages/Member 4/Registeer.js';
 import UserManagement from './pages/Member 4/User.js';
 import AdminDashboard from './pages/Member 4/AdminDashboard';
 import StudentDashboard from './pages/Member 4/StudentDashboard';
@@ -18,6 +18,8 @@ import UserNotifications from './pages/Member 4/UserNotifications';
 // Member 1 Pages
 import FacilityCatalogue from './pages/member1/FacilityCatalogue';
 import FacilityForm from './pages/member1/FacilityForm';
+import AdminFacilitiesPage from './pages/member1/AdminFacilitiesPage';
+import UserResourcesPage from './pages/member1/UserResourcesPage';
 
 // Member 2 Pages
 import BookingList from './pages/member2/BookingList';
@@ -53,6 +55,8 @@ function App() {
         <Route path="/facilities" element={<FacilityCatalogue />} />
         <Route path="/facilities/new" element={<FacilityForm />} />
         <Route path="/facilities/edit/:id" element={<FacilityForm />} />
+        <Route path="/admin-facilities" element={<AdminFacilitiesPage />} />
+        <Route path="/user-resources" element={<UserResourcesPage />} />
 
         {/* Member 2 Routes - Protected */}
         <Route element={<ProtectedRoute />}>
