@@ -20,10 +20,9 @@ const getAllBookings = () => {
 };
 
 const reviewBooking = (id, data) => {
-    // Map old { status, reason } to the backend's BookingDecisionRequestMember2
     return axios.patch(`${BASE_URL}/${id}/decision`, {
-        decision: data.status,   // APPROVED or REJECTED
-        adminNote: data.reason,
+        status: data.status,
+        rejectionReason: data.reason,
     }, { headers: getAuthHeader() });
 };
 
@@ -31,12 +30,17 @@ const cancelBooking = (id) => {
     return axios.patch(`${BASE_URL}/${id}/cancel`, {}, { headers: getAuthHeader() });
 };
 
+const deleteBooking = (id) => {
+    return axios.delete(`${BASE_URL}/${id}`, { headers: getAuthHeader() });
+};
+
 const bookingService = {
     createBooking,
     getMyBookings,
     getAllBookings,
     reviewBooking,
-    cancelBooking
+    cancelBooking,
+    deleteBooking
 };
 
 export default bookingService;

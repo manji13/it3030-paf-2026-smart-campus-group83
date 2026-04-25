@@ -80,7 +80,7 @@ export default function AdminBookingList() {
     const handleDelete = async (id) => {
         if (!window.confirm('Delete this booking request permanently?')) return;
         try {
-            await bookingService.reviewBooking(id, { status: 'REJECTED', reason: 'Deleted by admin' });
+            await bookingService.deleteBooking(id);
             fetchBookings();
         } catch (err) {
             alert(err.response?.data?.error || 'Error deleting booking.');
@@ -203,9 +203,9 @@ export default function AdminBookingList() {
                                                         <div className="text-gray-400 text-xs mt-1 max-w-[200px] overflow-hidden text-ellipsis" title={b.purpose}>
                                                             {b.purpose}
                                                         </div>
-                                                        {b.adminReason && (
+                                                        {b.rejectionReason && (
                                                             <div className="text-indigo-400 text-xs mt-1 italic">
-                                                                Note: {b.adminReason}
+                                                                Note: {b.rejectionReason}
                                                             </div>
                                                         )}
                                                     </td>

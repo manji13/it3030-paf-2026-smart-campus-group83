@@ -151,6 +151,12 @@ public class BookingServiceMember2 {
         return mapToResponse(bookingRepositoryMember2.save(booking));
     }
 
+    public void deleteBooking(String bookingId) {
+        Booking booking = bookingRepositoryMember2.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found: " + bookingId));
+        bookingRepositoryMember2.delete(booking);
+    }
+
     private void validateTimeRange(BookingCreateRequestMember2 request) {
         if (!request.getStartTime().isBefore(request.getEndTime())) {
             throw new BusinessException("Start time must be before end time");

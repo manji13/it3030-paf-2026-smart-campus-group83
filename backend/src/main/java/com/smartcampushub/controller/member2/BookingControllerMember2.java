@@ -81,4 +81,13 @@ public class BookingControllerMember2 {
         BookingResponseMember2 cancelled = bookingServiceMember2.cancelApprovedBooking(bookingId, currentUserId, isAdmin);
         return ResponseEntity.ok(ApiResponse.ok("Booking cancelled successfully", cancelled));
     }
+
+    @DeleteMapping("/{bookingId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> deleteBooking(
+            @PathVariable String bookingId
+    ) {
+        bookingServiceMember2.deleteBooking(bookingId);
+        return ResponseEntity.ok(ApiResponse.ok("Booking deleted successfully", null));
+    }
 }
