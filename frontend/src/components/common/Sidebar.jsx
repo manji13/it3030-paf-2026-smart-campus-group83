@@ -18,6 +18,7 @@ function Sidebar() {
   if (hasAnyRole([ROLES.ADMIN])) {
     navItems.push({ to: '/resources/new', label: 'Resource Admin (M1)' });
     navItems.push({ to: '/admin/bookings', label: 'Booking Admin (M2)' });
+    navItems.push({ to: '/admin/users', label: 'User Management (M4)' });
   }
 
   return (

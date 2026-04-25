@@ -23,8 +23,15 @@ function Navbar() {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
         <NotificationBell />
+        {user?.profileImageUrl || user?.pictureUrl ? (
+          <img
+            src={user.profileImageUrl || user.pictureUrl}
+            alt={user.fullName || user.name || 'User'}
+            style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', border: '2px solid #d9e3ee' }}
+          />
+        ) : null}
         <div className="muted" style={{ fontSize: '0.9rem' }}>
-          {user?.name || 'Unknown User'}
+          {user?.fullName || user?.name || 'Unknown User'}
         </div>
         <button className="btn secondary" onClick={logout}>
           Logout

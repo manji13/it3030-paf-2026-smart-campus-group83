@@ -1,6 +1,6 @@
 package com.smartcampushub.security;
 
-import com.smartcampushub.enums.UserRole;
+import com.smartcampushub.repository.member4.UserRepositoryMember4;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,13 +14,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepositoryMember4 userRepositoryMember4;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -36,16 +36,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (jwtService.isTokenValid(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
             String userId = jwtService.extractUserId(token);
-            Set<UserRole> roles = jwtService.extractRoles(token);
 
-            var authorities = roles.stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                    .toList();
-
+        userRepositoryMember4.findById(userId)
+            .filter(user -> user.isActive())
+            .ifPresent(user -> {
+            var authorities = java.util.List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                new UsernamePasswordAuthenticationToken(userId, null, authorities);
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            });
         }
 
         filterChain.doFilter(request, response);

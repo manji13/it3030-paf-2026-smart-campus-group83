@@ -6,11 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @Builder
@@ -20,15 +19,22 @@ import java.util.Set;
 public class User {
     @Id
     private String id;
+
+    @Indexed(unique = true)
     private String email;
-    private String name;
-    private String pictureUrl;
-    private String provider;
+
+    private String fullName;
+    private String profileImageUrl;
+
     @Builder.Default
-    private Set<UserRole> roles = new HashSet<>();
+    private UserRole role = UserRole.USER;
+
     @Builder.Default
-    private boolean enabled = true;
+    private boolean active = true;
+
     @Builder.Default
     private Instant createdAt = Instant.now();
-    private Instant lastLoginAt;
+
+    @Builder.Default
+    private Instant updatedAt = Instant.now();
 }

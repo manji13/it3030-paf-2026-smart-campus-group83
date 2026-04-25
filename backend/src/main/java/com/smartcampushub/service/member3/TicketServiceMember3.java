@@ -104,7 +104,9 @@ public class TicketServiceMember3 {
 
     public TicketResponseMember3 addComment(String ticketId, String userId, TicketCommentRequestMember3 request) {
         Ticket ticket = getTicketEntity(ticketId);
-        String authorName = userRepositoryMember4.findById(userId).map(User::getName).orElse(userId);
+        String authorName = userRepositoryMember4.findById(userId)
+            .map(user -> user.getFullName() != null ? user.getFullName() : user.getEmail())
+            .orElse(userId);
 
         TicketComment comment = TicketComment.builder()
                 .id(UUID.randomUUID().toString())
