@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 
@@ -50,7 +51,7 @@ public class BookingServiceMember2 {
             throw new BusinessException("Expected attendees exceed resource capacity");
         }
 
-        ensureNoOverlappingBooking(request.getResourceId(), request.getDate(), request.getStartTime().toString(), request.getEndTime().toString());
+        ensureNoOverlappingBooking(request.getResourceId(), request.getDate(), request.getStartTime(), request.getEndTime());
 
         Booking booking = Booking.builder()
                 .resourceId(request.getResourceId())
@@ -163,21 +164,13 @@ public class BookingServiceMember2 {
         }
     }
 
-    private void ensureNoOverlappingBooking(String resourceId, LocalDate date, String startTime, String endTime) {
-        List<Booking> activeBookings = bookingRepositoryMember2.findByResourceIdAndDateAndStatusIn(
-                resourceId,
-                date,
-                Set.of(BookingStatus.PENDING, BookingStatus.APPROVED)
+    private void ensureNoOverlappingBooking(String resourceId, LocalDate date, LocalTime startTime, LocalTime endTime) {
+        long conflictCount = bookingRepositoryMember2.countConflictingBookings(
+                resourceId, date, startTime, endTime
         );
 
-        for (Booking existing : activeBookings) {
-            // Overlap rule: [newStart, newEnd) overlaps [existingStart, existingEnd) iff
-            // newStart < existingEnd AND existingStart < newEnd.
-            boolean overlaps = startTime.compareTo(existing.getEndTime().toString()) < 0
-                    && existing.getStartTime().toString().compareTo(endTime) < 0;
-            if (overlaps) {
-                throw new ConflictException("Booking conflicts with an existing booking on the same resource and time range");
-            }
+        if (conflictCount > 0) {
+            throw new ConflictException("Booking conflicts with an existing booking on the same resource and time range");
         }
     }
 
