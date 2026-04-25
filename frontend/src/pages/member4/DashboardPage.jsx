@@ -16,12 +16,10 @@ function DashboardPage() {
   return (
     <div className="grid">
       <section className="panel">
-        <h2 style={{ marginTop: 0 }}>Welcome, {user?.name || 'Campus User'}</h2>
+        <h2 style={{ marginTop: 0 }}>Welcome, {user?.fullName || user?.name || 'Campus User'}</h2>
         <p className="muted">Role-based operations dashboard for Smart Campus management.</p>
         <div>
-          {(user?.roles || []).map((role) => (
-            <RoleBadgeMember4 key={role} role={role} />
-          ))}
+          <RoleBadgeMember4 role={user?.role || user?.roles?.[0] || 'USER'} />
         </div>
       </section>
 

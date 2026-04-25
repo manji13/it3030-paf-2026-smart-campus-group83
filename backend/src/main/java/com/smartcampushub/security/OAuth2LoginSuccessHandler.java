@@ -1,5 +1,6 @@
 package com.smartcampushub.security;
 
+import com.smartcampushub.dto.member4.AuthResponseMember4;
 import com.smartcampushub.service.member4.AuthServiceMember4;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,11 +31,11 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                                         Authentication authentication) throws IOException, ServletException {
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
         String email = String.valueOf(oauthUser.getAttributes().get("email"));
-        String name = String.valueOf(oauthUser.getAttributes().getOrDefault("name", email));
+        String fullName = String.valueOf(oauthUser.getAttributes().getOrDefault("name", email));
         String picture = String.valueOf(oauthUser.getAttributes().getOrDefault("picture", ""));
 
-        String token = authServiceMember4.processOauth2Login(email, name, picture);
-        String redirectUrl = frontendBaseUrl + "/auth/callback?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+        AuthResponseMember4 auth = authServiceMember4.processOauth2Login(email, fullName, picture);
+        String redirectUrl = frontendBaseUrl + "/auth/callback?token=" + URLEncoder.encode(auth.getToken(), StandardCharsets.UTF_8);
         response.sendRedirect(redirectUrl);
     }
 }

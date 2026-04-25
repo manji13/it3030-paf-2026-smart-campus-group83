@@ -33,8 +33,14 @@ export function AuthProvider({ children }) {
     try {
       const response = await member4Api.getProfile();
       const profile = response.data.data;
-      setUser(profile);
-      localStorage.setItem('sch_user', JSON.stringify(profile));
+      const normalizedProfile = {
+        ...profile,
+        name: profile.fullName,
+        pictureUrl: profile.profileImageUrl,
+        roles: profile.role ? [profile.role] : []
+      };
+      setUser(normalizedProfile);
+      localStorage.setItem('sch_user', JSON.stringify(normalizedProfile));
     } catch (error) {
       clearSession();
     } finally {
@@ -49,13 +55,13 @@ export function AuthProvider({ children }) {
   const loginWithMockGoogle = async (payload) => {
     const response = await member4Api.mockGoogleLogin(payload);
     const authData = response.data.data;
-    saveSession(authData.token, {
-      id: authData.userId,
-      email: authData.email,
-      name: authData.name,
-      pictureUrl: authData.pictureUrl,
-      roles: authData.roles
-    });
+    const normalizedUser = {
+      ...authData.user,
+      name: authData.user.fullName,
+      pictureUrl: authData.user.profileImageUrl,
+      roles: authData.user.role ? [authData.user.role] : []
+    };
+    saveSession(authData.token, normalizedUser);
     return authData;
   };
 
@@ -68,7 +74,7 @@ export function AuthProvider({ children }) {
   const hasAnyRole = useCallback(
     (roles = []) => {
       if (!roles.length) return true;
-      const userRoles = user?.roles || [];
+      const userRoles = user?.roles || (user?.role ? [user.role] : []);
       return roles.some((role) => userRoles.includes(role));
     },
     [user]

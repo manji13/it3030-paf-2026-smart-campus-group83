@@ -7,9 +7,8 @@ function LoginPage() {
   const { loginWithMockGoogle } = useAuth();
   const [form, setForm] = useState({
     email: '',
-    name: '',
-    pictureUrl: '',
-    requestedRole: 'USER'
+    fullName: '',
+    profileImageUrl: ''
   });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -19,8 +18,8 @@ function LoginPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
-    if (!form.email || !form.name) {
-      setError('Name and email are required.');
+    if (!form.email || !form.fullName) {
+      setError('Full name and email are required.');
       return;
     }
 
@@ -43,7 +42,7 @@ function LoginPage() {
       <form className="grid" onSubmit={handleSubmit}>
         <div>
           <label className="label">Full Name</label>
-          <input className="input" value={form.name} onChange={(e) => updateField('name', e.target.value)} />
+          <input className="input" value={form.fullName} onChange={(e) => updateField('fullName', e.target.value)} />
         </div>
 
         <div>
@@ -60,22 +59,9 @@ function LoginPage() {
           <label className="label">Profile Image URL (optional)</label>
           <input
             className="input"
-            value={form.pictureUrl}
-            onChange={(e) => updateField('pictureUrl', e.target.value)}
+            value={form.profileImageUrl}
+            onChange={(e) => updateField('profileImageUrl', e.target.value)}
           />
-        </div>
-
-        <div>
-          <label className="label">Preferred Role (demo)</label>
-          <select
-            className="select"
-            value={form.requestedRole}
-            onChange={(e) => updateField('requestedRole', e.target.value)}
-          >
-            <option value="USER">USER</option>
-            <option value="TECHNICIAN">TECHNICIAN</option>
-            <option value="ADMIN">ADMIN</option>
-          </select>
         </div>
 
         {error && <div style={{ color: '#c44536', fontWeight: 600 }}>{error}</div>}

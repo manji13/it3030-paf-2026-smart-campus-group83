@@ -17,6 +17,7 @@ import AdminBookingManagementPage from '../pages/member2/AdminBookingManagementP
 import TicketCreatePage from '../pages/member3/TicketCreatePage';
 import TicketListPage from '../pages/member3/TicketListPage';
 import TicketDetailPage from '../pages/member3/TicketDetailPage';
+import UsersManagementPage from '../pages/member4/UsersManagementPage';
 
 function AppRoutes() {
   return (
@@ -48,6 +49,7 @@ function AppRoutes() {
           <Route path="/resources/new" element={<ResourceFormPage mode="create" />} />
           <Route path="/resources/:resourceId/edit" element={<ResourceFormPage mode="edit" />} />
           <Route path="/admin/bookings" element={<AdminBookingManagementPage />} />
+          <Route path="/admin/users" element={<UsersManagementPage />} />
         </Route>
       </Route>
 
