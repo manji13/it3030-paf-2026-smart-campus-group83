@@ -11,7 +11,7 @@ function formatDate(dateStr) {
 
 function CommentItem(props) {
   var comment = props.comment;
-  var currentEmail = props.currentEmail;
+  var currentUserId = props.currentUserId;
   var isAdmin = props.isAdmin;
   var onDelete = props.onDelete;
   var onEdit = props.onEdit;
@@ -20,15 +20,15 @@ function CommentItem(props) {
   var isEditing = editingState[0];
   var setIsEditing = editingState[1];
 
-  var editTextState = useState(comment.text);
+  var editTextState = useState(comment.message);
   var editText = editTextState[0];
   var setEditText = editTextState[1];
 
-  var isOwner = currentEmail && comment.authorEmail === currentEmail;
+  var isOwner = currentUserId && comment.authorUserId === currentUserId;
   var canEdit = isOwner;
   var canDelete = isOwner || isAdmin;
 
-  var firstLetter = comment.authorName ? comment.authorName[0].toUpperCase() : '?';
+  var firstLetter = comment.authorDisplayName ? comment.authorDisplayName[0].toUpperCase() : '?';
 
   function handleSaveEdit() {
     if (!editText.trim()) return;
@@ -47,7 +47,7 @@ function CommentItem(props) {
       <div className="flex-1">
         {/* Author + time */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-semibold text-gray-700">{comment.authorName}</span>
+          <span className="text-xs font-semibold text-gray-700">{comment.authorDisplayName}</span>
           {isOwner && (
             <span className="text-xs bg-indigo-50 text-indigo-500 px-1.5 py-0.5 rounded font-medium">You</span>
           )}
@@ -76,7 +76,7 @@ function CommentItem(props) {
                 Save
               </button>
               <button
-                onClick={function () { setIsEditing(false); setEditText(comment.text); }}
+                onClick={function () { setIsEditing(false); setEditText(comment.message); }}
                 className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-xs hover:bg-gray-200"
               >
                 Cancel
@@ -84,7 +84,7 @@ function CommentItem(props) {
             </div>
           </div>
         ) : (
-          <p className="text-sm text-gray-600 mt-1 leading-relaxed">{comment.text}</p>
+          <p className="text-sm text-gray-600 mt-1 leading-relaxed">{comment.message}</p>
         )}
 
         {/* Action buttons */}
@@ -115,7 +115,7 @@ function CommentItem(props) {
 
 export default function CommentSection(props) {
   var ticketId = props.ticketId;
-  var currentEmail = props.currentEmail;
+  var currentUserId = props.currentUserId;
   var currentName = props.currentName;
   var isAdmin = props.isAdmin || false;
 
@@ -169,10 +169,7 @@ export default function CommentSection(props) {
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
       body: JSON.stringify({
-        authorEmail: currentEmail,
-        authorName: currentName,
-        text: newText.trim(),
-        isAdmin: isAdmin ? 'true' : 'false'
+        message: newText.trim()
       })
     })
       .then(function (res) { return res.json(); })
@@ -193,7 +190,7 @@ export default function CommentSection(props) {
         'Content-Type': 'application/json',
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
-      body: JSON.stringify({ requestEmail: currentEmail, text: updatedText })
+      body: JSON.stringify({ message: updatedText })
     })
       .then(function (res) { return res.json(); })
       .then(function (resData) {
@@ -247,7 +244,7 @@ export default function CommentSection(props) {
                   <CommentItem
                     key={comment.id}
                     comment={comment}
-                    currentEmail={currentEmail}
+                    currentUserId={currentUserId}
                     isAdmin={isAdmin}
                     onEdit={handleEdit}
                     onDelete={handleDelete}

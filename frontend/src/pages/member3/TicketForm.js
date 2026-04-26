@@ -65,15 +65,18 @@ const TicketForm = () => {
         preferredContact: formData.contactDetails,
         attachments: []
     };
+    const formDataToSend = new FormData();
+    formDataToSend.append('ticket', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+    images.forEach(img => formDataToSend.append('images', img));
+
     try {
       const token = localStorage.getItem('sch_token');
       const res = await fetch(API_BASE_URL, { 
         method: 'POST', 
         headers: {
-            'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
-        body: JSON.stringify(payload)
+        body: formDataToSend
       });
       if (!res.ok) throw new Error('Failed to create ticket');
       await res.json();

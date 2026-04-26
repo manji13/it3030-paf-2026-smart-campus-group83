@@ -36,7 +36,7 @@ function ImageCard({ url }) {
   );
 }
 
-function TicketCard({ ticket, userEmail, userName }) {
+function TicketCard({ ticket, userId, userEmail, userName }) {
   const ss = STATUS_STYLES[ticket.status] || { pill: 'bg-gray-100 text-gray-500 border-gray-200', dot: 'bg-gray-400', label: ticket.status };
   const ps = PRIORITY_STYLES[ticket.priority] || 'bg-gray-100 text-gray-500 border-gray-200';
   const dateStr = ticket.createdAt
@@ -126,7 +126,7 @@ function TicketCard({ ticket, userEmail, userName }) {
         <div className="border-t border-gray-100 dark:border-gray-700 mt-4 pt-4">
           <CommentSection
             ticketId={ticket.id}
-            currentEmail={userEmail}
+            currentUserId={userId}
             currentName={userName}
             isAdmin={false}
           />
@@ -138,6 +138,7 @@ function TicketCard({ ticket, userEmail, userName }) {
 
 export default function MyTickets() {
   const user = JSON.parse(localStorage.getItem('sch_user') || '{}');
+  const userId = user.id || '';
   const userEmail = user.email || '';
   const userName = user.name || user.email || 'User';
 
@@ -243,7 +244,7 @@ export default function MyTickets() {
         ) : (
           <div className="flex flex-col gap-5">
             {displayed.map(ticket => (
-              <TicketCard key={ticket.id} ticket={ticket} userEmail={userEmail} userName={userName} />
+              <TicketCard key={ticket.id} ticket={ticket} userId={userId} userEmail={userEmail} userName={userName} />
             ))}
           </div>
         )}

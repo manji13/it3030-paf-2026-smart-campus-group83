@@ -25,13 +25,14 @@ public class TicketControllerMember3 {
     private final TicketServiceMember3 ticketServiceMember3;
     private final SecurityUtils securityUtils;
 
-    @PostMapping
+    @PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('USER','ADMIN','TECHNICIAN')")
     public ResponseEntity<ApiResponse<TicketResponseMember3>> createTicket(
-            @Valid @RequestBody TicketCreateRequestMember3 request
+            @RequestPart("ticket") @Valid TicketCreateRequestMember3 request,
+            @RequestPart(value = "images", required = false) List<org.springframework.web.multipart.MultipartFile> images
     ) {
         String userId = securityUtils.currentUserId();
-        TicketResponseMember3 created = ticketServiceMember3.createTicket(userId, request);
+        TicketResponseMember3 created = ticketServiceMember3.createTicket(userId, request, images);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Ticket created successfully", created));
     }

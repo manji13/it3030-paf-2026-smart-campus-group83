@@ -92,7 +92,7 @@ function StatusEditor({ statusForm, setStatusForm, ticketId, onSave, onCancel, a
   );
 }
 
-function TicketDetail({ ticket, adminEmail, adminName, adminUsers, editingId, statusForm, setStatusForm, onEdit, onDelete, onSave, onCancel }) {
+function TicketDetail({ ticket, adminId, adminEmail, adminName, adminUsers, editingId, statusForm, setStatusForm, onEdit, onDelete, onSave, onCancel }) {
   const ss = STATUS_STYLES[ticket.status] || { pill: 'bg-gray-500/20 text-gray-400 border-gray-500/30', dot: 'bg-gray-400' };
   const ps = PRIORITY_STYLES[ticket.priority] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
   const dateStr = ticket.createdAt
@@ -120,8 +120,9 @@ function TicketDetail({ ticket, adminEmail, adminName, adminUsers, editingId, st
           {ticket.userEmail ? ticket.userEmail[0].toUpperCase() : '?'}
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-200">{ticket.userEmail || 'Unknown'}</p>
-          <p className="text-xs text-gray-500">{dateStr}</p>
+          <p className="text-sm font-semibold text-gray-200">{ticket.creatorName || 'Unknown User'}</p>
+          <p className="text-xs text-gray-400">{ticket.userEmail}</p>
+          <p className="text-[10px] text-gray-500 mt-0.5">{dateStr}</p>
         </div>
       </div>
 
@@ -197,7 +198,7 @@ function TicketDetail({ ticket, adminEmail, adminName, adminUsers, editingId, st
       )}
 
       {/* Comments */}
-      <CommentSection ticketId={ticket.id} currentEmail={adminEmail} currentName={adminName}
+      <CommentSection ticketId={ticket.id} currentUserId={adminId} currentName={adminName}
         isAdmin={true} assignedTechEmail={ticket.assignedToEmail || ''} assignedTechName={ticket.assignedTo || ''} />
     </div>
   );
@@ -205,7 +206,8 @@ function TicketDetail({ ticket, adminEmail, adminName, adminUsers, editingId, st
 
 /* ── main ──────────────────────────────────────────────────────────── */
 export default function TicketList() {
-  const stored = JSON.parse(localStorage.getItem('user') || '{}');
+  const stored = JSON.parse(localStorage.getItem('sch_user') || localStorage.getItem('user') || '{}');
+  const adminId = stored.id || '';
   const adminEmail = stored.email || '';
   const adminName = stored.name || stored.email || 'Admin';
 
@@ -415,10 +417,11 @@ export default function TicketList() {
                         }`}>
                       <div className="flex items-center justify-between mb-0.5">
                         <span className="text-xs font-semibold text-gray-300 truncate max-w-[160px]">
-                          {ticket.userEmail || 'Unknown'}
+                          {ticket.creatorName || ticket.userEmail || 'Unknown'}
                         </span>
                         <span className="text-[11px] text-gray-500 flex-shrink-0 ml-2">{dateStr}</span>
                       </div>
+                      <p className="text-[10px] text-gray-500 truncate mb-1">{ticket.userEmail}</p>
                       <p className="text-sm font-medium text-white truncate">{ticket.resource}</p>
                       <div className="flex items-center justify-between mt-1.5">
                         <p className="text-xs text-gray-500 truncate">{ticket.category}</p>
@@ -446,6 +449,7 @@ export default function TicketList() {
               {selectedTicket ? (
                 <TicketDetail
                   ticket={selectedTicket}
+                  adminId={adminId}
                   adminEmail={adminEmail}
                   adminName={adminName}
                   adminUsers={adminUsers}

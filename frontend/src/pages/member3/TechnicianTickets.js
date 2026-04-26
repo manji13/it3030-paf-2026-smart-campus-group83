@@ -21,6 +21,7 @@ const STATUS_FLOW = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED'];
 
 export default function TechnicianTickets() {
     const user = JSON.parse(localStorage.getItem('sch_user') || '{}');
+    const techId = user.id || '';
     const techEmail = user.email || '';
     const techName = user.name || user.email || 'Technician';
 
@@ -147,6 +148,7 @@ export default function TechnicianTickets() {
                     {selectedTicket ? (
                         <TicketView
                             ticket={selectedTicket}
+                            techId={techId}
                             techEmail={techEmail}
                             techName={techName}
                             onRefresh={() => fetchTickets(true)}
@@ -287,7 +289,7 @@ function StatusUpdater({ ticket, techEmail, techName, onRefresh }) {
 }
 
 // ─── Ticket detail view ──────────────────────────────────────────────────────
-function TicketView({ ticket, techEmail, techName, onRefresh }) {
+function TicketView({ ticket, techId, techEmail, techName, onRefresh }) {
     const statusColor = STATUS_COLORS[ticket.status] || 'bg-gray-100 text-gray-500';
     const priorityColor = PRIORITY_COLORS[ticket.priority] || 'bg-gray-100 text-gray-500';
     const dateStr = ticket.createdAt
@@ -383,7 +385,7 @@ function TicketView({ ticket, techEmail, techName, onRefresh }) {
             {/* Comments */}
             <CommentSection
                 ticketId={ticket.id}
-                currentEmail={techEmail}
+                currentUserId={techId}
                 currentName={techName}
                 isAdmin={true}
                 assignedTechEmail={techEmail}

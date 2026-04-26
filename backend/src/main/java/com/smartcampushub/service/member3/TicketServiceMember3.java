@@ -21,6 +21,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,12 +32,31 @@ public class TicketServiceMember3 {
     private final TicketRepositoryMember3 ticketRepositoryMember3;
     private final NotificationServiceMember4 notificationServiceMember4;
     private final UserRepositoryMember4 userRepositoryMember4;
+    private final ImageStorageService imageStorageService;
     private final MongoTemplate mongoTemplate;
 
-    public TicketResponseMember3 createTicket(String userId, TicketCreateRequestMember3 request) {
+    public TicketResponseMember3 createTicket(String userId, TicketCreateRequestMember3 request, List<org.springframework.web.multipart.MultipartFile> images) {
         if ((request.getResourceId() == null || request.getResourceId().isBlank())
                 && (request.getLocation() == null || request.getLocation().isBlank())) {
             throw new BusinessException("Either resourceId or location must be provided");
+        }
+
+        List<TicketAttachment> attachments = new ArrayList<>();
+        if (images != null && !images.isEmpty()) {
+            try {
+                List<String> savedUrls = imageStorageService.saveImages(images);
+                for (String url : savedUrls) {
+                    attachments.add(TicketAttachment.builder()
+                            .fileUrl(url)
+                            .fileName(url.substring(url.lastIndexOf("/") + 1))
+                            .contentType("image/jpeg") // simplification
+                            .build());
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to save images: " + e.getMessage());
+            }
+        } else if (request.getAttachments() != null && !request.getAttachments().isEmpty()) {
+            attachments.addAll(mapAttachments(request.getAttachments()));
         }
 
         Ticket ticket = Ticket.builder()
@@ -46,7 +66,7 @@ public class TicketServiceMember3 {
                 .description(request.getDescription().trim())
                 .priority(request.getPriority())
                 .preferredContact(request.getPreferredContact().trim())
-                .attachments(mapAttachments(request.getAttachments()))
+                .attachments(attachments)
                 .status(TicketStatus.OPEN)
                 .createdBy(userId)
                 .build();
@@ -174,8 +194,8 @@ public class TicketServiceMember3 {
             if (saved.getAssignedTechnicianId() != null) {
                 notificationServiceMember4.createNotification(
                         saved.getAssignedTechnicianId(),
-                        "New Ticket Comment",
-                        "The user added a comment to ticket: " + saved.getCategory(),
+                        "New Comment from User",
+                        authorName + ": " + (request.getMessage().length() > 50 ? request.getMessage().substring(0, 47) + "..." : request.getMessage()),
                         NotificationType.TICKET_COMMENT_ADDED,
                         "/technician-tickets"
                 );
@@ -184,8 +204,8 @@ public class TicketServiceMember3 {
             // Technician (or admin) commented, notify creator
             notificationServiceMember4.createNotification(
                     saved.getCreatedBy(),
-                    "New Ticket Comment",
-                    "A new comment was added to your ticket: " + saved.getCategory(),
+                    "New Comment from Technician",
+                    authorName + ": " + (request.getMessage().length() > 50 ? request.getMessage().substring(0, 47) + "..." : request.getMessage()),
                     NotificationType.TICKET_COMMENT_ADDED,
                     "/my-tickets"
             );
@@ -259,6 +279,17 @@ public class TicketServiceMember3 {
             }
         }
 
+        String creatorName = "Unknown";
+        if (ticket.getCreatedBy() != null) {
+            creatorName = userRepositoryMember4.findById(ticket.getCreatedBy())
+                    .map(User::getName)
+                    .orElse("Unknown User");
+        }
+
+        List<String> imageUrls = ticket.getAttachments().stream()
+                .map(TicketAttachment::getFileUrl)
+                .toList();
+
         return TicketResponseMember3.builder()
                 .id(ticket.getId())
                 .resourceId(ticket.getResourceId())
@@ -268,6 +299,7 @@ public class TicketServiceMember3 {
                 .priority(ticket.getPriority())
                 .preferredContact(ticket.getPreferredContact())
                 .attachments(ticket.getAttachments())
+                .imageUrls(imageUrls)
                 .status(ticket.getStatus())
                 .assignedTechnicianId(ticket.getAssignedTechnicianId())
                 .assignedTo(techName)
@@ -275,6 +307,7 @@ public class TicketServiceMember3 {
                 .resolutionNotes(ticket.getResolutionNotes())
                 .rejectionReason(ticket.getRejectionReason())
                 .createdBy(ticket.getCreatedBy())
+                .creatorName(creatorName)
                 .comments(ticket.getComments())
                 .createdAt(ticket.getCreatedAt())
                 .updatedAt(ticket.getUpdatedAt())

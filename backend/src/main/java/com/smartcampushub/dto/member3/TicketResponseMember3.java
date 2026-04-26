@@ -28,7 +28,9 @@ public class TicketResponseMember3 {
     private String resolutionNotes;
     private String rejectionReason;
     private String createdBy;
+    private String creatorName;
     private List<TicketComment> comments;
+    private List<String> imageUrls;
     private Instant createdAt;
     private Instant updatedAt;
 }
