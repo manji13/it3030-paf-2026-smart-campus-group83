@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Shared Components
-import Home from './pages/Home';
+
 import ProtectedRoute from './routes/ProtectedRoute';
 
 // Member 4 Pages
@@ -40,7 +40,7 @@ function App() {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Routes>
         {/* Main Route */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Login />} />
 
         {/* Member 4 Routes */}
         <Route path="/login" element={<Login />} />

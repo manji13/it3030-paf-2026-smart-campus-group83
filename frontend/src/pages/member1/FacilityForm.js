@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import facilityService from '../../services/facilityService';
 
+
 function FacilityForm() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ function FacilityForm() {
         availabilityWindows: '',
         status: 'ACTIVE'
     });
+    const [nameError, setNameError] = useState('');
 
     useEffect(() => {
         // Guard: only ADMIN can add/edit facilities
@@ -49,13 +51,28 @@ function FacilityForm() {
         }
     };
 
+
     const handleChange = (e) => {
+        if (e.target.name === 'name') {
+            const value = e.target.value;
+            // Only allow letters and spaces
+            if (!/^[A-Za-z\s]*$/.test(value)) {
+                setNameError('Resource Name can only contain letters and spaces.');
+            } else {
+                setNameError('');
+            }
+        }
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+        // Validate Resource Name before submit
+        if (!formData.name || !/^[A-Za-z\s]+$/.test(formData.name)) {
+            setNameError('Resource Name can only contain letters and spaces.');
+            return;
+        }
+
         const payload = {
             ...formData,
             capacity: parseInt(formData.capacity) || 0,
@@ -103,7 +120,18 @@ function FacilityForm() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-400 mb-1">Resource Name</label>
-                        <input required type="text" name="name" value={formData.name} onChange={handleChange} className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-400" placeholder="e.g. Auditorium A"/>
+                        <input
+                            required
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-400"
+                            placeholder="e.g. Auditorium A"
+                        />
+                        {nameError && (
+                            <p className="text-red-400 text-xs mt-1">{nameError}</p>
+                        )}
                     </div>
                     
                     <div className="grid grid-cols-2 gap-6">
