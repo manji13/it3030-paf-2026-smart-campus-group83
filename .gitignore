@@ -14,7 +14,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -24,10 +23,7 @@ yarn-error.log*
 Thumbs.db
 
 # Sensitive data
-.env
-.env.local
-.env.production
-.env.development
 application.propertie
 config/secrets/
 secrets/
+config.bat
