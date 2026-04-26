@@ -16,11 +16,27 @@ function FacilityModal({ facility, onClose, onSaved }) {
     });
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    const [nameError, setNameError] = useState('');
 
-    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleChange = (e) => {
+        if (e.target.name === 'name') {
+            const value = e.target.value;
+            if (!/^[A-Za-z\s]*$/.test(value)) {
+                setNameError('Resource Name can only contain letters and spaces.');
+            } else {
+                setNameError('');
+            }
+        }
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Validate Resource Name before submit
+        if (!formData.name || !/^[A-Za-z\s]+$/.test(formData.name)) {
+            setNameError('Resource Name can only contain letters and spaces.');
+            return;
+        }
         setSaving(true);
         setError('');
         const payload = {
@@ -64,10 +80,17 @@ function FacilityModal({ facility, onClose, onSaved }) {
                     <div>
                         <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Resource Name *</label>
                         <input
-                            required type="text" name="name" value={formData.name} onChange={handleChange}
+                            required
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
                             placeholder="e.g. Auditorium A"
                             className="w-full bg-gray-700 border border-gray-600 rounded-xl p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow"
                         />
+                        {nameError && (
+                            <p className="text-red-400 text-xs mt-1">{nameError}</p>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
