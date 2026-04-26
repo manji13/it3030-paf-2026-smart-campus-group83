@@ -169,6 +169,13 @@ export default function Login() {
         setShowSuccessModal(false);
         setTimeout(() => {
             navigate('/student-page');
+            if (redirectData?.role === 'ADMIN') {
+                navigate('/admin-page');
+            } else if (redirectData?.role === 'TECHNICIAN') {
+                navigate('/technician-tickets');
+            } else {
+                navigate('/student-page');
+            }
         }, 300);
     };
 

@@ -23,6 +23,8 @@ export default function Notifications() {
 
     useEffect(() => {
         fetchNotifications();
+        const interval = setInterval(fetchNotifications, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     const handleNotificationClick = async (notification) => {
@@ -32,11 +34,13 @@ export default function Notifications() {
                 await fetch(`http://localhost:8000/api/notifications/${notification.id}/read`, {
                     method: 'PUT'
                 });
+                setNotifications(prev =>
+                    prev.map(n => n.id === notification.id ? { ...n, read: true } : n)
+                );
             } catch (error) {
                 console.error('Error marking as read:', error);
             }
         }
-        
         // Navigate to the target path (e.g., /ticketList)
         if (notification.targetPath) {
             navigate(notification.targetPath);
@@ -46,11 +50,13 @@ export default function Notifications() {
     const handleMarkAllAsRead = async () => {
         try {
             await fetch('http://localhost:8000/api/notifications/read-all', { method: 'PUT' });
-            fetchNotifications(); // Refresh list
+            fetchNotifications();
         } catch (error) {
             console.error('Error marking all as read:', error);
         }
     };
+
+    const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -58,7 +64,12 @@ export default function Notifications() {
             
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Notifications</h1>
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Notifications</h1>
+                        {unreadCount > 0 && (
+                            <p className="text-sm text-indigo-600 font-medium mt-0.5">{unreadCount} unread</p>
+                        )}
+                    </div>
                     <button 
                         onClick={handleMarkAllAsRead}
                         className="text-sm px-4 py-2 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 transition-colors"
@@ -83,17 +94,30 @@ export default function Notifications() {
                                     !notif.read ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''
                                 }`}
                             >
-                                <div className="mt-1">
+                                {/* Unread dot */}
+                                <div className="mt-1 flex-shrink-0">
                                     {!notif.read ? (
                                         <div className="w-2.5 h-2.5 bg-red-500 rounded-full mt-1.5"></div>
                                     ) : (
                                         <div className="w-2.5 h-2.5 bg-gray-300 dark:bg-gray-600 rounded-full mt-1.5"></div>
                                     )}
                                 </div>
-                                <div className="flex-1">
+
+                                <div className="flex-1 min-w-0">
                                     <h3 className={`text-base font-semibold ${!notif.read ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
                                         {notif.title}
                                     </h3>
+
+                                    {/* User name badge */}
+                                    {notif.userName && (
+                                        <span className="inline-flex items-center gap-1 mt-1 mb-1.5 text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 px-2 py-0.5 rounded-full font-medium">
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                            {notif.userName}
+                                        </span>
+                                    )}
+
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                         {notif.message}
                                     </p>

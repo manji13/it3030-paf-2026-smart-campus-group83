@@ -8,6 +8,15 @@ import java.util.List;
 
 @Repository
 public interface NotificationRepository extends MongoRepository<Notification, String> {
+    // All notifications (legacy / admin)
     List<Notification> findAllByOrderByCreatedAtDesc();
     long countByIsReadFalse();
+
+    // Admin-only notifications (recipientEmail is null)
+    List<Notification> findByRecipientEmailIsNullOrderByCreatedAtDesc();
+    long countByRecipientEmailIsNullAndIsReadFalse();
+
+    // User-specific notifications
+    List<Notification> findByRecipientEmailOrderByCreatedAtDesc(String recipientEmail);
+    long countByRecipientEmailAndIsReadFalse(String recipientEmail);
 }

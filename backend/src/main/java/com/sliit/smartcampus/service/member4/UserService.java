@@ -90,6 +90,14 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public List<User> getAdminUsers() {
+        return userRepository.findByRole("ADMIN");
+    }
+
+    public List<User> getTechnicianUsers() {
+        return userRepository.findByRole("TECHNICIAN");
+    }
+
     public User updateRole(String id, String newRole) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
