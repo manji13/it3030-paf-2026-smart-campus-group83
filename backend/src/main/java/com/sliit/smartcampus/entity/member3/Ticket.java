@@ -1,13 +1,14 @@
 package com.sliit.smartcampus.entity.member3;
 
-
 import com.sliit.smartcampus.enums.Priority;
+import com.sliit.smartcampus.enums.TicketStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import jakarta.validation.constraints.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -17,6 +18,9 @@ public class Ticket {
 
     @Id
     private String id;
+
+    // 🔐 Linked to logged-in user
+    private String userEmail;
 
     @NotBlank(message = "Resource is required")
     private String resource;
@@ -33,12 +37,28 @@ public class Ticket {
     @NotNull(message = "Priority is required")
     private Priority priority;
 
-    @NotBlank(message = "Contact details (email or phone) are required")
-    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$|^\\+?[0-9. ()-]{7,}$",
-             message = "Contact must be a valid email or phone number")
+    @NotBlank(message = "Contact details are required")
+    @Pattern(
+        regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$|^\\+?[0-9. ()-]{7,}$",
+        message = "Contact must be a valid email or phone number"
+    )
     private String contactDetails;
 
     @Size(max = 3, message = "You can upload at most 3 images")
-    private List<String> imageUrls;   // store URLs or Base64 strings; for simplicity we use URLs
-}
+    private List<String> imageUrls;
 
+    // 🔄 Workflow fields
+    private TicketStatus status = TicketStatus.OPEN;
+
+    private String assignedTo;         // technician/staff display name
+
+    private String assignedToEmail;    // technician/staff email (for notifications)
+
+    private String resolutionNotes;    // filled when RESOLVED or REJECTED
+
+    private String rejectionReason;    // filled when REJECTED
+
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    private LocalDateTime updatedAt = LocalDateTime.now();
+}

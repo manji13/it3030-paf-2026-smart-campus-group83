@@ -51,6 +51,18 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    // GET - Fetch only ADMIN users
+    @GetMapping("/admins")
+    public ResponseEntity<List<User>> getAdminUsers() {
+        return ResponseEntity.ok(userService.getAdminUsers());
+    }
+
+    // GET - Fetch only TECHNICIAN users (for assignment dropdown)
+    @GetMapping("/technicians")
+    public ResponseEntity<List<User>> getTechnicianUsers() {
+        return ResponseEntity.ok(userService.getTechnicianUsers());
+    }
+
     // 4. PUT - Update Role
     @PutMapping("/{id}/role")
     public ResponseEntity<User> updateRole(@PathVariable String id, @RequestBody Map<String, String> payload) {
